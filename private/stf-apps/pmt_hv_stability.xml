@@ -3,7 +3,7 @@
 <stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
   <name>pmt_hv_stability</name>
   <description>PMT HV Stability Test</description>
-  <version major="1" minor="0"/>
+  <version major="1" minor="1"/>
 
   <inputParameter>
     <description>HV set level (V)</description>

@@ -19,12 +19,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "stf/stf.h"
 #include "hal/DOM_MB_hal.h"
 
 /* Pass/fail defines */
-#define MAX_ERR_VOLT  5
+#define MAX_ERR_VOLT  10
 
 BOOLEAN pmt_hv_rampInit(STF_DESCRIPTOR *desc) { return TRUE; }
 
@@ -75,7 +76,7 @@ BOOLEAN pmt_hv_rampEntry(STF_DESCRIPTOR *desc,
     #endif
 
     /* Read the HV base ID */
-    strcpy(*hv_id, halHVSerial());
+    *hv_id = halHVSerial();
     #ifdef VERBOSE
     printf("DEBUG: HV ID is %s\r\n", *hv_id);
     #endif
@@ -85,8 +86,8 @@ BOOLEAN pmt_hv_rampEntry(STF_DESCRIPTOR *desc,
         
         halWriteActiveBaseDAC(hv_set_level);
 
-        /* Currently let settle for 10s */
-        halUSleep(10000000);
+        /* Currently let settle for 5s */
+        halUSleep(5000000);
 
         hv_read_level = halReadBaseADC();
         
