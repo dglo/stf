@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
-  <name>atwd_pedestal</name>
-  <description>ATWD Pedestal</description>
+  <name>atwd_clock1x_forced</name>
+  <description>Determine ATWD sampling speed parameters from clock 1X input</description>
   <version major="1" minor="0"/>
+
+  <fpgaDependencies>
+	<DAQ/>
+  </fpgaDependencies>
+
   <inputParameter>
     <description>DAC setting (of a 12 Bit device) for ATWD sampling speed</description>
     <name>atwd_sampling_speed_dac</name>
@@ -40,47 +45,34 @@
   </inputParameter>
 
   <inputParameter>
-    <description>Selects one of 3 PMT analog signal channels with different gains</description>
-    <name>atwd_channel</name>
-    <unsignedInt default="0" maxValue="2" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <description>Selects ATWD launch method: 0=forced trigger, 1=SPE discriminator trigger</description>
-    <name>atwd_trig_forced_or_spe</name>
-    <unsignedInt default="0" maxValue="1" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <description>SPE discriminator in microvolts (at the PMT input). 5000 = 5mV ~ 1 SPE</description>
-    <name>spe_descriminator_uvolt</name>
-    <unsignedInt default="0" maxValue="5000" minValue="-5000"/>
-  </inputParameter>
-
-  <inputParameter>
     <description>Number of waveforms to take and average over before analysis</description>
     <name>loop_count</name>
     <unsignedInt default="1000" maxValue="1000000" minValue="1"/>
   </inputParameter>
 
   <outputParameter>
-    <description>Is the peak-to-peak amplitude of the averaged pedestal waveform</description>
-    <name>atwd_pedestal_amplitude</name>
+    <description>Is the peak-to-peak amplitude of the averaged clock 1x waveform</description>
+    <name>atwd_clock1x_amplitude</name>
     <unsignedInt/>
   </outputParameter>
 
   <outputParameter>
-    <description>Average pedestal pattern waveform in ATWD counts units.</description>
-    <name>atwd_pedestal_pattern</name>
+    <description>ATWD sampling speed in MHz</description>
+    <name>atwd_sampling_speed_MHz</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>ATWD sampling speed dac setting at 300MHz</description>
+    <name>atwd_sampling_speed_dac_300MHz</name>
+    <unsignedInt/>
+  </outputParameter>
+  
+  <outputParameter>
+    <description>ATWD clock1x waveform</description>
+    <name>atwd_clock1x_waveform</name>
     <unsignedIntArray length="128" />
   </outputParameter>
-
-  <outputParameter>
-    <description></description>
-    <name>atwd_spe_disc_threshold_dac</name>
-    <unsignedInt/>
-  </outputParameter>
-
 
 </stf:test>
 

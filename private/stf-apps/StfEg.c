@@ -15,6 +15,10 @@ BOOLEAN StfEgEntry(STF_DESCRIPTOR *d,
                     BOOLEAN *Para5,
                     char * *Para6,
                     unsigned *Para7,
-                    unsigned long *Para8) {
+                    unsigned long *Para8,
+                    unsigned *Para9) {
+   /* must fill output array */
+   int i;
+   for (i=0; i<10; i++) Para9[i] = i;
    return TRUE; 
 }

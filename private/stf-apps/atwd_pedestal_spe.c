@@ -1,34 +1,36 @@
-/* atwd_pedestal.c, skeleton file created by gendir
+/* atwd_pedestal_spe.c, skeleton file created by gendir
  */
 #include <stdlib.h>
 
 #include "stf/stf.h"
-#include "stf-apps/atwd_pedestal.h"
+#include "stf-apps/atwd_pedestal_spe.h"
+
 #include "stf-apps/atwdUtils.h"
 
 #include "hal/DOM_MB_hal.h"
 #include "hal/DOM_MB_fpga.h"
 
-BOOLEAN atwd_pedestalInit(STF_DESCRIPTOR *d) {
+BOOLEAN atwd_pedestal_speInit(STF_DESCRIPTOR *d) {
    return TRUE;
 }
 
-BOOLEAN atwd_pedestalEntry(STF_DESCRIPTOR *d,
-			   unsigned atwd_sampling_speed_dac,
-			   unsigned atwd_ramp_top_dac,
-			   unsigned atwd_ramp_bias_dac,
-			   unsigned atwd_analog_ref_dac,
-			   unsigned atwd_pedestal_dac,
-			   unsigned atwd_chip_a_or_b,
-			   unsigned atwd_channel,
-			   unsigned atwd_trig_forced_or_spe,
-			   unsigned spe_descriminator_uvolt,
-			   unsigned loop_count,
-			   unsigned *atwd_pedestal_amplitude,
-			   unsigned *atwd_pedestal_pattern,
-			   unsigned *atwd_disc_threshold_dac) {
+BOOLEAN atwd_pedestal_speEntry(STF_DESCRIPTOR *d,
+                    unsigned atwd_sampling_speed_dac,
+                    unsigned atwd_ramp_top_dac,
+                    unsigned atwd_ramp_bias_dac,
+                    unsigned atwd_analog_ref_dac,
+                    unsigned atwd_pedestal_dac,
+                    unsigned atwd_ch0_clamp,
+                    unsigned atwd_chip_a_or_b,
+                    unsigned atwd_channel,
+                    unsigned loop_count,
+                    unsigned *atwd_pedestal_amplitude,
+                    unsigned *atwd_pedestal_pattern,
+                    unsigned *atwd_spe_disc_threshold_dac) {
    const int ch = (atwd_chip_a_or_b) ? 0 : 4;
    int i;
+   int spe_dac_nominal;
+   int step;
    unsigned minv, maxv;
    const int cnt = 128;
    short *buffer = (short *) calloc(cnt, sizeof(short));
@@ -36,41 +38,52 @@ BOOLEAN atwd_pedestalEntry(STF_DESCRIPTOR *d,
    int trigger_mask = (atwd_chip_a_or_b) ? 
       HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
 
-   /* A. all five atwd dac settings are programmed...
+   /* pretest checks: */
+
+   /* 1) all five atwd dac settings are programmed...
     */
    halWriteDAC(ch, atwd_sampling_speed_dac);
    halWriteDAC(ch+1, atwd_ramp_top_dac);
    halWriteDAC(ch+2, atwd_ramp_bias_dac);
    halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF, atwd_analog_ref_dac);
    halWriteDAC(DOM_HAL_DAC_PMT_FE_PEDESTAL, atwd_pedestal_dac);
+   /* FIXME: clamping dac? */
 
-   /* C. if the SPE trigger was requested, calculate the SPE DAC that
-    * corresponds to SPE_DISCRIMINATOR_UVOLT and program it...
-    */
-   if (atwd_trig_forced_or_spe==1) {
-      *atwd_disc_threshold_dac = (unsigned) 
-	 ((spe_descriminator_uvolt * 9.6 * (2200+1000)/1000 + 
-	   atwd_pedestal_dac * 5000000 / 4096)*1024/5000000);
-      halWriteDAC(DOM_HAL_DAC_SINGLE_SPE_THRESH, *atwd_disc_threshold_dac);
-   }
-
-   /* warm up the atwd... */
    prescanATWD(trigger_mask);
 
+   /* 2) disable HV */
+   halDisablePMT_HV();
+
+   /* 3) get spe_dac_nominal */
+   spe_dac_nominal = speDACNominal(0, atwd_pedestal_dac);
+
+   /* 4) scan spe_dac... */
+   step = 0.005*spe_dac_nominal;
+   if (step<=0) step = 1;
+   *atwd_spe_disc_threshold_dac = 0;
+   for (i=(int)(spe_dac_nominal*0.95); 
+	i<= (int)(spe_dac_nominal*1.05); i+=step) {
+      halWriteDAC(DOM_HAL_DAC_SINGLE_SPE_THRESH, i);
+      hal_FPGA_TEST_trigger_disc(trigger_mask);
+      halUSleep(1000);
+      if (hal_FPGA_TEST_readout_done(trigger_mask)) {
+	 hal_FPGA_TEST_clear_trigger();
+	 *atwd_spe_disc_threshold_dac = i;
+	 break;
+      }
+      hal_FPGA_TEST_clear_trigger();
+   }
+
+   /* return error if we couldn't trigger... */
+   if (*atwd_spe_disc_threshold_dac == 0) return FALSE;
+   
    for (i=0; i<(int)loop_count; i++) {
       int j;
       
       /* B. The ATWD trigger mask is written according to 
        * ATWD_TRIG_FORCED_OR_SPE
        */
-      if (atwd_trig_forced_or_spe==0) {
-	 /* forced ... */
-	 hal_FPGA_TEST_trigger_forced(trigger_mask);
-      }
-      else {
-	 /* discriminator... */
-	 hal_FPGA_TEST_trigger_disc(trigger_mask);
-      }
+      hal_FPGA_TEST_trigger_disc(trigger_mask);
 
       /* D.  Take one waveform for the channel requested...
        */
@@ -85,6 +98,8 @@ BOOLEAN atwd_pedestalEntry(STF_DESCRIPTOR *d,
       /* E. repeat...
        */
    }
+
+   reverseATWDIntWaveform(atwd_pedestal_pattern);
 
    /* F. divide the resulting sum waveform by LOOP_COUNT to get an average
     * waveform.
@@ -111,12 +126,6 @@ BOOLEAN atwd_pedestalEntry(STF_DESCRIPTOR *d,
    
    return minv>0 && maxv<1023 && (maxv-minv)<60;
 }
-
-
-
-
-
-
 
 
 

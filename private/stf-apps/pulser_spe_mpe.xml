@@ -19,22 +19,27 @@
   </inputParameter>
 
   <inputParameter>
-    <name>pedestal_level</name>
-    <unsignedInt default="3000000"/>
+    <name>pedestal_dac</name>
+    <unsignedInt default="1925" minValue="0" maxValue="4095"/>
   </inputParameter>
 
   <inputParameter>
     <name>repetition_rate</name>
-    <unsignedInt default="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <name>max_rate_deviation</name>
-    <unsignedInt default="10"/>
+    <unsignedInt default="1200"/>
   </inputParameter>
 
   <outputParameter>
     <name>measured_rate</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <name>actual_rate</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <name>discriminator_dac</name>
     <unsignedInt/>
   </outputParameter>
 

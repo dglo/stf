@@ -6,10 +6,15 @@
 # set proper paths...
 #
 PATH=/bin:/usr/bin/:/usr/lib/cgi-bin/stf:/usr/lib/cgi-bin/stf/xml/bin
-PATH=${PATH}:/usr/local/bin
+PATH=${PATH}:/usr/local/bin:/usr/local/j2sdk/bin
 export PATH
 
 xmlpath=/var/www/stf/xml
+
+function qryCookie() {
+    awk 'BEGIN { FS="="; RS=";[ ]*"; } { printf "%s\t%s\n", $1, $2; }' | \
+     grep -e "^$1	" | sed -n "s/^$1	//1p"
+}
 
 #
 # splitParams, split the paramString into lines, translate

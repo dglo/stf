@@ -5,60 +5,105 @@
  *
  */
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "stf/stf.h"
+#include "hal/DOM_MB_fpga.h"
+#include "hal/DOM_MB_pld.h"
 
 /* Prototypes
  */
 
 /* Module level variables
  */
+void stfInitTest(STF_DESCRIPTOR *sd) {
+   if (!sd->isInit) {
+      int i;
+      int vermm;
+      
+      /* make sure dependencies are valid...
+       */
+      vermm = hal_FPGA_query_versions(DOM_HAL_FPGA_TYPE_ICEBOOT,
+				      sd->fpgaDependencies)!=0;
+      if (vermm) {
+	 vermm = hal_FPGA_query_versions(DOM_HAL_FPGA_TYPE_STF_COM,
+					 sd->fpgaDependencies)!=0;
+	 if (vermm) {
+	    vermm = hal_FPGA_query_versions(DOM_HAL_FPGA_TYPE_STF_NOCOM,
+					    sd->fpgaDependencies)!=0;
+	 }
+      }
+
+      sd->testRunnable = sd->initPt(sd) && !vermm;
+      sd->isInit = 1;
+      
+      for (i=0; i<sd->nParams; i++) {
+	 if (strcmp(sd->params[i].type, UINT_ARRAY_TYPE)==0) {
+	    sd->params[i].value.intArrayValue = 
+	       (unsigned *) calloc(sd->params[i].arrayLength,
+				   sizeof(unsigned));
+	 }
+	 if (strcmp(sd->params[i].type, ULONG_ARRAY_TYPE)==0) {
+	    sd->params[i].value.longArrayValue = 
+	       (unsigned long *) calloc(sd->params[i].arrayLength,
+				   sizeof(unsigned long));
+	 }
+      }
+   }
+
+   /* always clear pld and fpga state...
+    */
+   {  const int xxx = 0;
+      
+   /* make sure atwd mux is on led */
+   halSelectAnalogMuxInput(DOM_HAL_MUX_PMT_LED_CURRENT);
+   
+   halDisableBarometer();
+   halDisableFlasher();
+   halDisableLEDPS();
+   halDisablePMT_HV();
+   
+   halWriteDAC(DOM_HAL_DAC_ATWD0_TRIGGER_BIAS, 850 );
+   halWriteDAC(DOM_HAL_DAC_ATWD0_RAMP_TOP, 2097 );
+   halWriteDAC(DOM_HAL_DAC_ATWD0_RAMP_RATE , 3000 );
+   halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF , 2048 );
+   halWriteDAC(DOM_HAL_DAC_ATWD1_TRIGGER_BIAS , 850 );
+   halWriteDAC(DOM_HAL_DAC_ATWD1_RAMP_TOP , 2097 );
+   halWriteDAC(DOM_HAL_DAC_ATWD1_RAMP_RATE , 3000 );
+   halWriteDAC(DOM_HAL_DAC_PMT_FE_PEDESTAL , 1925 );
+   halWriteDAC(DOM_HAL_DAC_MULTIPLE_SPE_THRESH , xxx );
+   halWriteDAC(DOM_HAL_DAC_SINGLE_SPE_THRESH , 500 );
+   halWriteDAC(DOM_HAL_DAC_LED_BRIGHTNESS , xxx );
+   halWriteDAC(DOM_HAL_DAC_FAST_ADC_REF , xxx );
+   halWriteDAC(DOM_HAL_DAC_INTERNAL_PULSER , 500 );
+   halWriteDAC(DOM_HAL_DAC_FE_AMP_LOWER_CLAMP , xxx );
+   halWriteDAC(DOM_HAL_DAC_SPARE_ADC0 , xxx );
+   halWriteDAC(DOM_HAL_DAC_SPARE_ADC1 , xxx );
+   }
+   
+   /* Thorsten recommends we wait a bit for these things to
+    * settle...
+    */
+   halUSleep(1000);
+   
+   /* fpga routines...
+    */
+   hal_FPGA_TEST_disable_ping_pong();
+   hal_FPGA_TEST_disable_pulser();
+   hal_FPGA_TEST_clear_trigger();
+}
 
 /*------------------------------------------------------------
  */
 void stfInitAllTests()
 {
     STF_DESCRIPTOR *d=NULL;
-    STF_PARAM *newParam;
-    unsigned int i;
-    unsigned long l;
 
     d=findNextTest(d);
     while(d!=NULL) {
-	d->testRunnable = (d->initPt)(d);
-	
-        // init all params for this test to their default values
-        newParam=d->params;
-        while(strcmp(newParam->name,"")) {
-	    if(!strcmp(newParam->type,CHAR_TYPE)) {
-	        strcpy(newParam->value.charValue,newParam->defValue);
-	    }
-	    if(!strcmp(newParam->type,UINT_TYPE)) {
-	        sscanf(newParam->defValue,"%u",&i);
-	        newParam->value.intValue=i;
-	    }
-	    if(!strcmp(newParam->type,ULONG_TYPE)) {
-	        sscanf(newParam->defValue,"%lu",&l);
-	        newParam->value.intValue=l;
-	    }
-	    if(!strcmp(newParam->type,BOOLEAN_TYPE)) {
-	        if(!strcmp(newParam->defValue,BOOLEAN_TRUE)) {
-		    newParam->value.boolValue=TRUE;
-	        }
-	        else {
-		    newParam->value.boolValue=FALSE;
-	        }
-	    }
-
-	    // add code to init arrayLength field from arraySize
-	    // if any inconsistencies, tag test as unrunnable and don't
-	    // bother calling test's init fcn.
-
-	    newParam++;
-        }
-        // go to next test
-        d=findNextTest(d);
+       stfInitTest(d);
+       d=findNextTest(d);
     }
 }
 

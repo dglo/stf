@@ -24,7 +24,7 @@ extern BOOLEAN <xsl:copy-of select="$testName"/>Entry(STF_DESCRIPTOR *,
     <xsl:copy-of select="../name"/>
   </xsl:template>
   <xsl:template match="stf:test/*" mode="Entry">
-    <xsl:apply-templates mode="Entry" select="boolean|string|unsignedInt|unsignedLong"/>
+    <xsl:apply-templates mode="Entry" select="boolean|string|unsignedInt|unsignedLong|unsignedIntArray"/>
     <xsl:choose>
       <xsl:when test='((0=count(../outputParameter))or("outputParameter"=local-name()))and(last()=position())'>);</xsl:when>
       <xsl:otherwise>,</xsl:otherwise>
@@ -36,6 +36,7 @@ extern BOOLEAN <xsl:copy-of select="$testName"/>Entry(STF_DESCRIPTOR *,
   <xsl:template match="stf:test/outputParameter/string" mode="signature">char*</xsl:template>
   <xsl:template match="stf:test/*/unsignedInt" mode="signature">unsigned int</xsl:template>
   <xsl:template match="stf:test/*/unsignedLong" mode="signature">unsigned long</xsl:template>
+  <xsl:template match="stf:test/outputParameter/unsignedIntArray" mode="signature">unsigned int</xsl:template>
   <xsl:template match="stf:test/outputParameter/*" mode="entryModifier">* </xsl:template>
   <xsl:template match="stf:test/*/*" mode="EntryLocal">
     <xsl:text>                   </xsl:text>

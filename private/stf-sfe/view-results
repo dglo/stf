@@ -58,7 +58,7 @@ fi
 
 restt=/usr/lib/cgi-bin/stf/xml/bin/restotab.awk
 tabth=/usr/lib/cgi-bin/stf/xml/bin/tabtohtml.awk
-xmlv ${fullrxml} | awk -f ${restt} | awk -f ${tabth}
+xmlv ${fullrxml} | awk -f ${restt} | awk -v xml=${fullrxml} -f ${tabth}
 
 
 

@@ -2,7 +2,7 @@ BEGIN {
    printf("<html>\n<head>\n  <title>Run STF tests</title>\n</head>\n");
    printf("<body>\n");
    printf("<h2>Configure and run an STF test</h2>\n");
-   printf("<ul>\n");
+   printf("<ol>\n");
 }
 
 {  
@@ -14,7 +14,7 @@ BEGIN {
 }
 
 END {
-   printf("</ul>\n");
+   printf("</ol>\n");
    printf("</body>\n</html>\n");
 }
 

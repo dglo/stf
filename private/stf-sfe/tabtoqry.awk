@@ -14,18 +14,18 @@ BEGIN {
 }
 
 {
-   if ( $3 == "input" ) {
+   if ( $4 == "input" ) {
       printf("    <tr>");
       printf("<td>%s</td>", $2);
-      printf("<td>%s</td>", $4);
-      if ( $4 == "boolean" ) {
+      printf("<td>%s</td>", $5);
+      if ( $5 == "boolean" ) {
 	 printf("<td><select name=\"%s\"><option value=\"true\">True</option><option value=\"false\">False</option>", $2);
 	 printf("<td></td><td></td>");
       }
       else {
-	 printf("<td><input name=\"%s\" value=\"%s\"></input></td>", $2, $5);
-	 printf("<td>" $6 "</td>");
+	 printf("<td><input name=\"%s\" value=\"%s\"></input></td>", $2, $6);
 	 printf("<td>" $7 "</td>");
+	 printf("<td>" $8 "</td>");
       }
       printf("</tr>\n");
    }

@@ -103,10 +103,7 @@ int  main()
 	   
 	   printf("\r\n\r\ntesting\r\n");
 
-	   if (!d->isInit) {
-	      d->testRunnable = d->initPt(d);
-	      d->isInit = 1;
-	   }
+	   stfInitTest(d);
 	   
 	   if (d->testRunnable==0) {
 	      printf("\r\ntest '%s' is not runnable", d->name);

@@ -3,11 +3,15 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
+
 #include "stf/stf.h"
 #include "stf-apps/atwd_baseline.h"
 
 #include "hal/DOM_MB_hal.h"
 #include "hal/DOM_MB_fpga.h"
+
+#include "stf-apps/atwdUtils.h"
 
 BOOLEAN atwd_baselineInit(STF_DESCRIPTOR *d) {
    return TRUE;
@@ -24,17 +28,15 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
                     unsigned atwd_trig_forced_or_spe,
                     unsigned spe_discriminator_uvolt,
                     unsigned loop_count,
-                    BOOLEAN fill_output_arrays,
                     unsigned *atwd_baseline_mean,
                     unsigned *atwd_baseline_rms,
                     unsigned *atwd_baseline_min,
                     unsigned *atwd_baseline_max,
                     unsigned *atwd_baseline_histogram,
                     unsigned *atwd_disc_threshold_dac) {
-
    const int ch = 
       (atwd_chip_a_or_b) ? 
-      DOM_HAL_DAC_ATWD1_TRIGGER_BIAS : DOM_HAL_DAC_ATWD0_TRIGGER_BIAS;
+      DOM_HAL_DAC_ATWD0_TRIGGER_BIAS : DOM_HAL_DAC_ATWD1_TRIGGER_BIAS;
    int i;
    unsigned minv, maxv;
    const int cnt = 128;
@@ -63,10 +65,12 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
       halWriteDAC(DOM_HAL_DAC_MULTIPLE_SPE_THRESH, *atwd_disc_threshold_dac);
    }
 
-   /* Thorsten recommends we wait a bit...
-    */
-   halUSleep(1000);
+   prescanATWD(trigger_mask);
 
+   /* clear histogram...
+    */
+   memset(atwd_baseline_histogram, 0, 1024*sizeof(unsigned));
+   
    for (i=0; i<(int)loop_count; i++) {
       int j;
       unsigned sum = 0;
@@ -87,14 +91,17 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
        */
       channels[atwd_channel] = buffer;
       hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], channels[3],
-			    NULL, NULL, NULL, NULL,
-			    cnt, NULL, 0, atwd_chip_a_or_b);
+			    channels[0], channels[1], channels[2], channels[3],
+			    cnt, NULL, 0, trigger_mask);
 
-      /* sum it... */
+      /* sum it ... */
       for (j=0; j<cnt; j++) sum+=buffer[j];
 
-      /* record it... */
+      /* average and record it... */
       values[i] = sum/cnt;
+
+      /* histogram it... */
+      atwd_baseline_histogram[ values[i]&0x3ff ] ++;
 
       /* E. repeat...
        */
@@ -118,10 +125,11 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
    *atwd_baseline_rms = (int) sqrt( (1.0/(loop_count-1)) * sm2 );
    *atwd_baseline_min = minv;
    *atwd_baseline_max = maxv;
-   *atwd_baseline_histogram = 0;
 
    free(buffer);
    free(values);
    
    return TRUE;
 }
+
+

@@ -43,9 +43,29 @@ BEGIN {
 	cmd =  "awk '/^" $1 "\t" $2 "\t/ { print $3; }' /var/www/stf/xml/all.tab";
 	cmd | getline type;
     }
+
+    #
+    # check for array type...
+    #
+    isArray = "";
+    cmd = "awk '/^" $1 "\t" $2 "\t/ { print $4; }' /var/www/stf/xml/all.tab";
+    cmd | getline isArray;
+    
+    if (isArray == "unsignedIntArray") {
+       value = "<a href=\"http://deimos.lbl.gov/cgi-bin/stf/plot-array" \
+	  "?file=" xml "&parameter=" $2 "\">plot</a>";
+    }
+    else {
+       value = $3;
+    }
+
+    #
+    # FIXME: check to see if this is an array and
+    # put link to plot here...
+    #
     
     print "<tr>";
-    print "<td>" $2 "</td><td>" type "</td><td>" $3 "</td>";
+    print "<td>" $2 "</td><td>" type "</td><td>" value "</td>";
     print  "</tr>";
 }
 
@@ -55,4 +75,8 @@ END {
    print "</body>";
    print "</html>";
 }
+
+
+
+
 

@@ -10,6 +10,7 @@
 #include <libxml/parser.h>
 
 #include "stf/stf.h"
+#include "hal/DOM_MB_fpga.h"
 
 struct ParamNodeStruct;
 typedef struct ParamNodeStruct ParamNode;
@@ -65,6 +66,13 @@ static void fillParam(STF_PARAM *param, xmlDocPtr doc,
 	    param->defValue = 
 	       xmlNodeListGetString(doc, ap->xmlChildrenNode, 1);
 
+	 ap = xmlHasProp(pxn, "length");
+	 if (ap!=NULL) {
+	    param->arraySize = xmlNodeListGetString(doc, ap->xmlChildrenNode, 
+						    1);
+	    param->arrayLength = atoi(param->arraySize);
+	 }
+
 	 if (strcmp(param->type, CHAR_TYPE)==0) {
 	    param->value.charValue = 
 	       (param->defValue==NULL) ? "" : param->defValue;
@@ -79,10 +87,50 @@ static void fillParam(STF_PARAM *param, xmlDocPtr doc,
 	 }
 	 else if (strcmp(param->type, BOOLEAN_TYPE)==0) {
 	    param->value.boolValue = 
-	       (param->defValue==NULL) ? 0 : atoi(param->defValue);
+	       (param->defValue==NULL) ? 0 : 
+	         ((strcmp(param->defValue, BOOLEAN_TRUE)==0) ? 1 : 0);
 	 }
       }
    }
+}
+
+static unsigned fillDependencies(struct _xmlNode *children) {
+   xmlNodePtr pxn;
+   unsigned mask = 0;
+
+   for (pxn = children; pxn!=NULL; pxn=pxn->next) {
+      if (xmlStrcmp(pxn->name, "COM_FIFO")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_COM_FIFO;
+      }
+      else if (xmlStrcmp(pxn->name, "DAQ")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_DAQ;
+      }
+      else if (xmlStrcmp(pxn->name, "PULSERS")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_PULSERS;
+      }
+      else if (xmlStrcmp(pxn->name, "DISCRIMINATOR_RATE")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_DISCRIMINATOR_RATE;
+      }
+      else if (xmlStrcmp(pxn->name, "LOCAL_COINC")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_LOCAL_COINC;
+      }
+      else if (xmlStrcmp(pxn->name, "FLASHER_BOARD")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_FLASHER_BOARD;
+      }
+      else if (xmlStrcmp(pxn->name, "TRIGGER")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_TRIGGER;
+      }
+      else if (xmlStrcmp(pxn->name, "LOCAL_CLOCK")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_LOCAL_CLOCK;
+      }
+      else if (xmlStrcmp(pxn->name, "SUPERNOVA")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_SUPERNOVA;
+      }
+      else if (xmlStrcmp(pxn->name, "ALL")==0) {
+	 mask |= DOM_HAL_FPGA_COMP_ALL;
+      }
+   }
+   return mask;
 }
 
 static DescNode *parseFile(const char *fn, DescNode *next) {
@@ -95,6 +143,7 @@ static DescNode *parseFile(const char *fn, DescNode *next) {
       return NULL;
    }
    dn->desc.testRunnable = dn->desc.passed = 0;
+   dn->desc.fpgaDependencies = 0;
    dn->parms = NULL;
    dn->next = NULL;
 
@@ -125,6 +174,9 @@ static DescNode *parseFile(const char *fn, DescNode *next) {
       else if (xmlStrcmp(cur->name, (const xmlChar *) "version")==0) {
 	 dn->desc.majorVersion = atoi(xmlGetProp(cur, "major"));
 	 dn->desc.minorVersion = atoi(xmlGetProp(cur, "minor"));
+      }
+      else if (xmlStrcmp(cur->name, (const xmlChar *) "fpgaDependencies")==0) {
+	 dn->desc.fpgaDependencies = fillDependencies(cur->xmlChildrenNode);
       }
       else if (xmlStrcmp(cur->name, (const xmlChar *) "inputParameter")==0 ||
 	       xmlStrcmp(cur->name, (const xmlChar *) "outputParameter")==0) {
@@ -243,6 +295,11 @@ static const char *getUnionField(STF_PARAM *p) {
    }
 }
 
+static int isArrayType(const char *type) {
+   return 
+      strcmp(type, UINT_ARRAY_TYPE)==0 ||
+      strcmp(type, ULONG_ARRAY_TYPE)==0;
+}
 
 int main(int argc, char *argv[]) {
    int ai, i;
@@ -332,8 +389,8 @@ int main(int argc, char *argv[]) {
 	       fprintf(cptr, 
 		       "/* %s, skeleton file created by gendir\n */\n"
 		       "#include \"stf/stf.h\"\n"
-		       "#include \"stfDirectory.h\"\n\n",
-		       fname);
+		       "#include \"stf-apps/%s.h\"\n\n", 
+		       fname, tdn->desc.name);
 	    }
 	 }
 	 
@@ -382,12 +439,14 @@ int main(int argc, char *argv[]) {
 		       tp->parm.value.boolValue);
 	    }
 	    else if (strcmp(tp->parm.type, UINT_ARRAY_TYPE)==0) {
-	       fprintf(fptr, "     .intArrayValue = &%s_%s_array\n",
-		       tdn->desc.name, tp->parm.name);
+	       fprintf(fptr, 
+		       "       .intArrayValue = NULL "
+		       "/* initialized at run time */\n");
 	    }
 	    else if (strcmp(tp->parm.type, ULONG_ARRAY_TYPE)==0) {
-	       fprintf(fptr, "     .longArrayValue = &%s_%s_array\n",
-		       tdn->desc.name, tp->parm.name);
+	       fprintf(fptr, 
+		       "       .longArrayValue = NULL "
+		       "/* initialized at run time */\n");
 	    }
 	    else {
 	       fprintf(stderr, "invalid type '%s'\n", tp->parm.type);
@@ -450,14 +509,18 @@ int main(int argc, char *argv[]) {
 	       if (strcmp(tp->parm.class, "output")==0) {
 		  fprintf(hptr,
 			  ",\n"
-			  "                    %s *%s", 
-			  getOutputType(&tp->parm), tp->parm.name);
+			  "                    %s %s%s", 
+			  getOutputType(&tp->parm),
+			  isArrayType(tp->parm.type) ? "" : "*",
+			  tp->parm.name);
 		  
 		  if (cptr!=NULL) {
 		     fprintf(cptr,
 			     ",\n"
-			     "                    %s *%s", 
-			     getOutputType(&tp->parm), tp->parm.name);
+			     "                    %s %s%s", 
+			     getOutputType(&tp->parm), 
+			     isArrayType(tp->parm.type) ? "" : "*",
+			     tp->parm.name);
 		  }
 	       }
 	    }
@@ -495,7 +558,8 @@ int main(int argc, char *argv[]) {
 		  fprintf(fptr,
 			  ",\n"
 			  "                     "
-			  "&getParamByName(d,  \"%s\")->value.%s",
+			  "%sgetParamByName(d,  \"%s\")->value.%s",
+			  isArrayType(tp->parm.type) ? "" : "&",
 			  tp->parm.name, getUnionField(&tp->parm));
 	       }
 	    }
@@ -515,6 +579,8 @@ int main(int argc, char *argv[]) {
 	 fprintf(fptr, "  .minorVersion = %d,\n", tdn->desc.minorVersion);
 	 fprintf(fptr, "  .testRunnable = %d,\n", tdn->desc.testRunnable);
 	 fprintf(fptr, "  .passed = %d,\n", tdn->desc.passed);
+	 fprintf(fptr, "  .fpgaDependencies = 0x%08x,\n", 
+		 tdn->desc.fpgaDependencies);
 	 fprintf(fptr, "  .nParams = %d,\n", np);
 	 fprintf(fptr, "  .params = %s_params,\n", tdn->desc.name);
 	 fprintf(fptr, "  .initPt = %sInit,\n", tdn->desc.name);

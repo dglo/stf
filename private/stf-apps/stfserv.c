@@ -203,14 +203,14 @@ static int dirToXML(char *buf, int max, STF_DESCRIPTOR *stf) {
       }
       else if (strcmp(stf->params[i].type, UINT_ARRAY_TYPE)==0) {
 	 for (j=0; j<stf->params[i].arrayLength; j++) {
-	    idx += sprintf(buf+idx, "%u", 
-			   stf->params[i].value.intArrayPtr[j]);
+	    idx += sprintf(buf+idx, "%u ", 
+			   stf->params[i].value.intArrayValue[j]);
 	 }
       }
       else if (strcmp(stf->params[i].type, ULONG_ARRAY_TYPE)==0) {
 	 for (j=0; j<stf->params[i].arrayLength; j++) {
-	    idx += sprintf(buf+idx, "%lu", 
-			   stf->params[i].value.longArrayPtr[j]);
+	    idx += sprintf(buf+idx, "%lu ", 
+			   stf->params[i].value.longArrayValue[j]);
 	 }
       }
       else {
@@ -223,7 +223,7 @@ static int dirToXML(char *buf, int max, STF_DESCRIPTOR *stf) {
 	   stf->passed ? BOOLEAN_TRUE : BOOLEAN_FALSE);
    idx += sprintf(buf+idx, "   <testRunnable>%s</testRunnable>\r\n", 
 		  stf->testRunnable ? BOOLEAN_TRUE : BOOLEAN_FALSE);   
-   idx += sprintf(buf+idx, "   <boardID>%s</boardID>\r\n", halGetBoardID());
+   idx += sprintf(buf+idx, "   <boardID>%s</boardID>\r\n", halGetBoardID()+4);
    
    if (stfErrorMessage()!=NULL) {
       idx+= sprintf(buf+idx, "    <errorMessage>%s</errorMessage>\r\n",
@@ -320,9 +320,8 @@ int main() {
 	    state = 6;
 	 }
 	 else {
-	    if (strcmp(line, "EXIT")==0) {
-	       fprintf(stdout, "exiting...\r\n");
-	       return 0;
+	    if (strcmp(line, "REBOOT")==0) {
+	       halBoardReboot();
 	    }
 	    else if (sscanf(line, "SEND %d", &nbytes)==1) {
 	       state = 2;
@@ -406,10 +405,7 @@ int main() {
 	    state = 6;
 	 }
 	 else {
-	    if (!sd->isInit) {
-	       sd->testRunnable = sd->initPt(sd);
-	       sd->isInit = 1;
-	    }
+	    stfInitTest(sd);
 	    
 	    if (sd->testRunnable==0) {
 	       sprintf(msg, "test '%s' is not runnable", name);

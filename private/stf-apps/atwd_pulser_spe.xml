@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
-  <name>atwd_baseline</name>
-  <description>ATWD Baseline</description>
+  <name>atwd_pulser_spe</name>
+  <description>ATWD Pulser SPE Test</description>
   <version major="1" minor="0"/>
+
+  <fpgaDependencies>
+	<DAQ/>
+  </fpgaDependencies>
+
   <inputParameter>
     <description>DAC setting (of a 12 Bit device) for ATWD sampling speed</description>
     <name>atwd_sampling_speed_dac</name>
@@ -34,9 +39,15 @@
   </inputParameter>
 
   <inputParameter>
+    <description>DAC setting for ATWD 1st stage output clamping</description>
+    <name>atwd_ch0_clamp</name>
+    <unsignedInt default="0" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
     <description>Selects one of two chips (A or B) on the board:0=ATWD-A and 1=ATWD-B </description>
     <name>atwd_chip_a_or_b</name>
-    <unsignedInt default="1" maxValue="1" minValue="0"/>
+    <unsignedInt default="0" maxValue="1" minValue="0"/>
   </inputParameter>
 
   <inputParameter>
@@ -46,57 +57,69 @@
   </inputParameter>
 
   <inputParameter>
-    <description>Selects ATWD launch method: 0=forced trigger, 1=SPE discriminator trigger</description>
-    <name>atwd_trig_forced_or_spe</name>
-    <unsignedInt default="0" maxValue="1" minValue="0"/>
+    <description>Pulser amplitude in microvolts (at PMT input)</description>
+    <name>pulser_amplitude_uvolt</name>
+    <unsignedInt default="5000" minValue="0" maxValue="5000000"/>
   </inputParameter>
 
   <inputParameter>
-    <description>SPE discriminator in microvolts (at the PMT input). 5000 = 5mV ~ 1 SPE</description>
-    <name>spe_discriminator_uvolt</name>
-    <unsignedInt default="0" maxValue="5000" minValue="-5000"/>
+    <description>Should we do pedestal subtraction?</description>
+    <name>pedestal_subtraction</name>
+    <boolean default="true"/>
   </inputParameter>
 
   <inputParameter>
-    <description>Number of waveforms for baseline histogram and to compute mean, rms, etc</description>
+    <description>Number of pedestal waveforms to acquire and average</description>
+    <name>n_pedestal_waveforms</name>
+    <unsignedInt default="50"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Number of SPE waveforms to collect and average</description>
     <name>loop_count</name>
-    <unsignedInt default="1000" maxValue="100000" minValue="2"/>
+    <unsignedInt default="1000" minValue="0" maxValue="1000000"/>
   </inputParameter>
 
   <outputParameter>
-    <description>Mean of the baseline values</description>
-    <name>atwd_baseline_mean</name>
+    <description>First triggerable SPE DAC value</description>
+    <name>triggerable_spe_dac</name>
     <unsignedInt/>
   </outputParameter>
 
   <outputParameter>
-    <description>Standard deviation of the baseline values</description>
-    <name>atwd_baseline_rms</name>
+    <description>Waveform of baseline in ATWD counts units</description>
+    <name>atwd_baseline_waveform</name>
     <unsignedInt/>
   </outputParameter>
 
   <outputParameter>
-    <description>Minimum of the baseline values</description>
-    <name>atwd_baseline_min</name>
+    <description>Width of the ATWD waveform</description>
+    <name>atwd_waveform_width</name>
     <unsignedInt/>
   </outputParameter>
 
   <outputParameter>
-    <description>Maximum of the baseline values</description>
-    <name>atwd_baseline_max</name>
+    <description>Amplitude of the ATWD waveform</description>
+    <name>atwd_waveform_amplitude</name>
     <unsignedInt/>
   </outputParameter>
 
   <outputParameter>
-    <description>Histogram of waveform baseline values in ATWD counts units.</description>
-    <name>atwd_baseline_histogram</name>
-    <unsignedIntArray length="1024" />
+    <description>Pulse peak position in ATWD samples units</description>
+    <name>atwd_waveform_position</name>
+    <unsignedInt/>
   </outputParameter>
 
   <outputParameter>
-    <description>ATWD discriminator threshold DAC setting</description>
-    <name>atwd_spe_disc_threshold_dac</name>
+    <description>Expected amplitude of the ATWD waveform</description>
+    <name>atwd_expected_amplitude</name>
     <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Average ATWD waveform</description>
+    <name>atwd_waveform_pulser_spe</name>
+    <unsignedIntArray length="128"/>
   </outputParameter>
 
 </stf:test>

@@ -121,8 +121,13 @@ static int connectTCP(const char *hostname, short port) {
 
 static void usage(void) {
    fprintf(stderr,
-	   "usage: stftcp host port\n"
-	   "  [-verbose | -send file | -go testname | -rcv test file]\n");
+	   "usage: stftcp host port [options]\n"
+	   "  options:\n"
+	   "    -verbose\n"
+	   "    -send file\n"
+	   "    -go testname\n"
+	   "    -rcv test file\n"
+	   "    -ready\n");
 }
 
 /* serial input/output control...
@@ -158,7 +163,16 @@ int main(int argc, char *argv[]) {
   }
 
   for (ai=3; ai<argc; ai++) {
-    if (strcmp(argv[ai], "-send")==0 && ai+1<argc) {
+     if (strcmp(argv[ai], "-ready")==0) {
+	struct pollfd fds[1];
+	fds[0].fd = fdSer;
+	fds[0].events = POLLIN;
+	
+	/* make sure there is no extra crap after OK --
+	 */
+	return (poll(fds, 1, 500)==0) ? 0 : 1;
+     }
+     else if (strcmp(argv[ai], "-send")==0 && ai+1<argc) {
       struct stat st;
       char *buf;
       int rfd = open(argv[ai+1], O_RDONLY), ret;
@@ -285,7 +299,7 @@ int main(int argc, char *argv[]) {
     }
     else {
        usage();
-      return 1;
+       return 1;
     }
   }
 

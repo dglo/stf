@@ -11,6 +11,22 @@
             <xs:attribute name="minor" type="xs:nonNegativeInteger" use="required"/>
           </xs:complexType>
         </xs:element>
+        <xs:element maxOccurs="1" minOccurs="0" name="fpgaDependencies">
+          <xs:complexType>
+            <xs:all>
+              <xs:element default="true" minOccurs="0" name="COM_FIFO" type="xs:boolean"/>
+              <xs:element default="true" minOccurs="0" name="COM_DP" type="xs:boolean"/>
+              <xs:element default="true" minOccurs="0" name="DAQ" type="xs:boolean"/>
+              <xs:element default="true" minOccurs="0" name="PULSERS" type="xs:boolean"/>
+              <xs:element default="true" minOccurs="0" name="DISCRIMINATOR_RATE" type="xs:boolean"/>
+              <xs:element default="true" minOccurs="0" name="LOCAL_COINC" type="xs:boolean"/>
+              <xs:element default="true" minOccurs="0" name="FLASHER_BOARD" type="xs:boolean"/>
+              <xs:element default="true" minOccurs="0" name="TRIGGER" type="xs:boolean"/>
+              <xs:element default="true" minOccurs="0" name="LOCAL_CLOCK" type="xs:boolean"/>
+              <xs:element default="true" minOccurs="0" name="SUPERNOVA" type="xs:boolean"/>
+        </xs:all>
+          </xs:complexType>
+        </xs:element>
         <xs:element maxOccurs="unbounded" minOccurs="0" name="inputParameter">
           <xs:complexType>
             <xs:sequence>
@@ -62,6 +78,11 @@
                 </xs:element>
                 <xs:element name="unsignedLong">
                   <xs:complexType/>
+                </xs:element>
+                <xs:element name="unsignedIntArray">
+                  <xs:complexType>
+                     <xs:attribute name="length" type="xs:unsignedLong" use="required"/>
+                  </xs:complexType>
                 </xs:element>
               </xs:choice>
             </xs:sequence>
