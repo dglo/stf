@@ -26,7 +26,7 @@ TESTOBJS  = ADC.o memory.o StfEg.o atwd_pedestal.o atwd_baseline.o \
 	atwd_clock1x_forced.o flasher_brightness.o flasher_width.o \
 	fadc_fe_pulser.o fadc_baseline.o fadc_fe_forced.o disc_scan.o \
 	loopback_lc.o atwd_pedestal_noise.o temperature.o atwd_pmt_spe.o \
-	fadc_fe_external.o atwd_pmt_led.o
+	fadc_fe_external.o atwd_pmt_led.o atwd_clock2x_forced.o
 
 XMLFILES  = $(TESTOBJS:.o=.xml)
 CFILES    = $(TESTOBJS:.o=.c)

@@ -1,6 +1,7 @@
 /* atwd_pedestal.c, skeleton file created by gendir
  */
 #include <stdlib.h>
+#include <string.h>
 
 #include "stf/stf.h"
 #include "stf-apps/atwd_pedestal.h"

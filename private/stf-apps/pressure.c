@@ -26,13 +26,11 @@ BOOLEAN pressureEntry(STF_DESCRIPTOR *d,
                     unsigned *adc_rms_kpascal,
                     unsigned *adc_max_kpascal,
                     unsigned *adc_min_kpascal) {
-
-  /*unsigned here;*/
-  /*  unsigned *adc_5v_mean_mvolts;*/
-  unsigned loop_n, pressure_sum, voltage_sum;
-  unsigned pressure_value, voltage_value;
+  unsigned loop_n;
+  double pressure_sum, voltage_sum;
+  unsigned voltage_value;
   unsigned Adc_5v_mean_counts;
-  double pressure_float, temp_float, temp2_float, sum_sqr_float;
+  double temp_float, temp2_float, sum_sqr_float;
   unsigned *buff = 
      (unsigned *) calloc(loop_count, sizeof(unsigned));
  
@@ -41,36 +39,33 @@ BOOLEAN pressureEntry(STF_DESCRIPTOR *d,
 
   halEnableBarometer();
   halUSleep(2000000);
-/* add 2 sec wait */
-  if(loop_count<2) loop_count=2;
-  pressure_sum = 0;
-  voltage_sum = 0;
-  *adc_max_counts = 0;
-  *adc_min_counts = 0xffff;
+  /* add 2 sec wait */
+  pressure_sum = voltage_sum = 0;
 
-  for(loop_n=0;loop_n<loop_count;loop_n++)
-    {
-      buff[loop_n] = halReadADC(DOM_HAL_ADC_PRESSURE);
-      pressure_sum +=buff[loop_n];
-      voltage_value = halReadADC(DOM_HAL_ADC_5V_POWER_SUPPLY);
-      voltage_sum += voltage_value;
-
+  for(loop_n=0;loop_n<loop_count;loop_n++) {
+     buff[loop_n] = halReadADC(DOM_HAL_ADC_PRESSURE);
+     pressure_sum += buff[loop_n];
+     voltage_sum += halReadADC(DOM_HAL_ADC_5V_POWER_SUPPLY);
+  }
+  
+  *adc_max_counts = *adc_min_counts = buff[0];
+  for(loop_n=1;loop_n<loop_count;loop_n++) {
       if(buff[loop_n]<*adc_min_counts) *adc_min_counts = buff[loop_n];
       if(buff[loop_n]>*adc_max_counts) *adc_max_counts = buff[loop_n];
-    }
+  }
   halDisableBarometer();
 
-  *adc_mean_counts = pressure_sum/loop_count;
-  Adc_5v_mean_counts = voltage_sum/loop_count;
+  *adc_mean_counts = (unsigned) (pressure_sum/loop_count);
+  Adc_5v_mean_counts = (unsigned) (voltage_sum/loop_count);
   temp_float = (double)Adc_5v_mean_counts * 0.002 * (25.0/10.0)*1000.0;
   *adc_5v_mean_mvolts = (unsigned)floor(temp_float);
 
   sum_sqr_float = 0;
   for(loop_n=0;loop_n<loop_count;loop_n++)
     {
-      pressure_value = buff[loop_n];
-      pressure_float = (double)(pressure_value-*adc_mean_counts);
-      sum_sqr_float += pressure_float * pressure_float;
+       const double pressure_float = 
+          (double)buff[loop_n]-(double)*adc_mean_counts;
+       sum_sqr_float += pressure_float * pressure_float;
     }
 
   free(buff);

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <math.h>
 
@@ -13,7 +14,7 @@ BOOLEAN ADCEntry(STF_DESCRIPTOR *desc,
 		 unsigned *pass_or_fail) {
 
    const int total_channel = 24;
-   unsigned i, j, adc_count, dac_count, sum;
+   unsigned i, j, dac_count;
    float dac_to_adc;
    memset(adc_value,0,total_channel*sizeof(unsigned));
    memset(pass_or_fail,0,total_channel*sizeof(unsigned));
