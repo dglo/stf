@@ -43,7 +43,7 @@ BOOLEAN pressureEntry(STF_DESCRIPTOR *d,
   pressure_sum = voltage_sum = 0;
 
   /* throw first few data out because in cold, first few data are BAD */
-  for(x=0; x=10;x++){
+  for(x=0; x<10;x++){
      halReadADC(DOM_HAL_ADC_PRESSURE);    
      halReadADC(DOM_HAL_ADC_5V_POWER_SUPPLY);
   }
