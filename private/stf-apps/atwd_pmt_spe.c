@@ -16,7 +16,7 @@ BOOLEAN atwd_pmt_speInit(STF_DESCRIPTOR *d) {
 }
 
 BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
-                    unsigned atwd_sampling_speed,
+                    unsigned atwd_sampling_speed_dac,
                     unsigned atwd_ramp_top_dac,
                     unsigned atwd_ramp_bias_dac,
                     unsigned atwd_analog_ref_dac,
@@ -36,8 +36,7 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
                     unsigned *atwd_waveform_amplitude,
                     unsigned *atwd_waveform_position,
                     unsigned *atwd_expected_amplitude,
-                    unsigned *atwd_waveform_pmt_spe,
-                    unsigned *atwd_sampling_speed_dac) {
+                    unsigned *atwd_waveform_pmt_spe) {
    const int ch = (atwd_chip_a_or_b) ? 0 : 4;
    int i;
    const int cnt = 128;
@@ -46,18 +45,15 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
    int *sum_waveform = (int *) calloc(128, sizeof(int));
    int trigger_mask = (atwd_chip_a_or_b) ? 
       HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
-   int pmt_dac, use_pulser=0;
+   int spe_dac_nominal, pmt_dac, pulser_or_not=0;
 
-   /* pretest A) calculate sampling speed dac setting... */
-   *atwd_sampling_speed_dac = 
-      calcATWDSamplingSpeedDAC(ch, trigger_mask, atwd_sampling_speed);
-
-   /* set the new dac value... */
-   halWriteDAC(ch, *atwd_sampling_speed_dac);
+   /* pretest 1) all five atwd dac settings are programmed... */
+   halWriteDAC(ch, atwd_sampling_speed_dac);
    halWriteDAC(ch+1, atwd_ramp_top_dac);
    halWriteDAC(ch+2, atwd_ramp_bias_dac);
    halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF, atwd_analog_ref_dac);
    halWriteDAC(DOM_HAL_DAC_PMT_FE_PEDESTAL, atwd_pedestal_dac);
+   /* FIXME: clamp? */
 
    /* pretest 2) pmt is off */
    halPowerDownBase();
@@ -68,7 +64,7 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
     halWriteActiveBaseDAC(pmt_hv_low_volt*2); /* for pmt, input_dac=input_volt*2 */
    
    /* pretest 4) turn on pmt */
-   if (scanSPE(atwd_pedestal_dac, triggerable_spe_dac, use_pulser)) {
+   if (scanSPE(atwd_pedestal_dac, triggerable_spe_dac, pulser_or_not)) {
       /* no triggerable value found... */
       free(buffer);
       return FALSE;
@@ -100,10 +96,10 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
    pmt_dac = pmt_hv_high_volt*2;
    halEnableBaseHV();
    halWriteActiveBaseDAC(pmt_dac);
+   *real_hv_output = (halReadBaseDAC()/2); 
 
    /* wait for dacs, et al... */
-   halUSleep(1000*2000);
-   *real_hv_output = halReadBaseADC()/2; 
+   halUSleep(1000*100);
 
    /* 3) take loop_count waveforms...
     */
@@ -140,8 +136,6 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
    }
    
    free(sum_waveform);
-   halPowerDownBase();
-   halUSleep(2000000);  /* allow 2s for hv to stabilize... */
 
    /* 8) reverse waveform */
    reverseATWDIntWaveform(atwd_waveform_pmt_spe);
@@ -152,10 +146,10 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
        int half_max, hmxIdx = 127, hmnIdx = 0;
        
        for (i=1; i<128; i++) {
-	 if (maxValue < atwd_waveform_pmt_spe[i]) {
-	   maxIdx = i;
-	   maxValue = atwd_waveform_pmt_spe[i];
-	 }
+	  if (maxValue < atwd_waveform_pmt_spe[i]) {
+	     maxIdx = i;
+	     maxValue = atwd_waveform_pmt_spe[i];
+	  }
        }
 
        /* 10) */
@@ -166,16 +160,16 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
 	  (*atwd_waveform_amplitude)/2 + *atwd_baseline_waveform;
 
        for (i=maxIdx; i<cnt; i++) {
-	 if (atwd_waveform_pmt_spe[i]<half_max) {
-	   hmxIdx = i;
-	   break;
-	 }
+	  if (atwd_waveform_pmt_spe[i]<half_max) {
+	     hmxIdx = i;
+	     break;
+	  }
        }
        for (i=maxIdx; i>=0; i--) {
-	 if (atwd_waveform_pmt_spe[i]<half_max) {
-	   hmnIdx = i;
-	   break;
-	 }
+	  if (atwd_waveform_pmt_spe[i]<half_max) {
+	     hmnIdx = i;
+	     break;
+	  }
        }
 
        /* 14 */
@@ -190,9 +184,18 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
    free(buffer);
 
    return 
-      *atwd_waveform_position >= 6 &&
-      *atwd_waveform_position <= 11 &&
-      *atwd_waveform_amplitude > 15 &&
-      *real_hv_output > 0.95*pmt_hv_high_volt &&
-      *real_hv_output < 1.05*pmt_hv_high_volt;
+      *atwd_waveform_position > 2 &&
+      *atwd_waveform_position < 10 &&
+      *atwd_waveform_width > 2 &&
+      *atwd_waveform_width < 6;
 }
+
+
+
+
+
+
+
+
+
+

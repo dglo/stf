@@ -33,9 +33,6 @@
  * 6  ERR msg\r\n
  *    (goto 1)
  *
- * 7  DOMID domid\r\n
- *    (goto 1)
- *
  *
  * FIXME: loop count input and output!!!!
  *   factor out 
@@ -85,7 +82,6 @@ static void startElement(void *userData, const char *name, const char **atts) {
      break;
   case 2:
      if (strcmp(xmlTag, "version")==0) {
-#if 0
 	const int major = atoi(atts[0]);
 	const int minor = atoi(atts[1]);
 	const int err = 
@@ -93,7 +89,6 @@ static void startElement(void *userData, const char *name, const char **atts) {
 	
 	/* FIXME: what do we do now?!?!
 	 */
-#endif
      } else if (strcmp(xmlTag, "parameters")==0) {
 	/* printf("parameters!\n"); */
      }
@@ -125,6 +120,7 @@ static void endElement(void *userData, const char *name) {
 
 /* s is not 0 terminated. */
 static void characterData(void *userData, const XML_Char *s, int len) {
+   int *depthPtr = (int *) userData;
    char str[64];
 
    memcpy(str, s, len);
@@ -339,9 +335,6 @@ int main() {
 	    else if (strcmp(line, "OK")==0) {
 	       state = 1;
 	    }
-	    else if (strcmp(line, "DOMID")==0) {
-               state = 7;
-            }
 	    else {
 	       sprintf(msg, "invalid state 1 command!: '%s'", line);
 	       state = 6;
@@ -474,13 +467,6 @@ int main() {
 	 strcpy(msg, "");
 	 state = 1;
       }
-      else if (state==7) {
-	 char msg[128];
-	 snprintf(msg, sizeof(msg), "DOMID %s\r\n",
-		 halGetBoardID());
-         write(1, msg, strlen(msg));
-    	 state = 1;
-      } 
    }
 
    return 0;

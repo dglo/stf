@@ -23,48 +23,4 @@
     <name>dor_waveforms</name>
     <unsignedIntArray length="4800" />
   </outputParameter>
-  <outputParameter>
-    <description>dor tx high 32 bits</description>
-    <name>dor_tx_hi</name>
-    <unsignedIntArray length="100" />
-  </outputParameter>
-  <outputParameter>
-    <description>dor tx low 32 bits</description>
-    <name>dor_tx_lo</name>
-    <unsignedIntArray length="100" />
-  </outputParameter>
-  <outputParameter>
-    <description>dom rx high 32 bits</description>
-    <name>dom_rx_hi</name>
-    <unsignedIntArray length="100" />
-  </outputParameter>
-  <outputParameter>
-    <description>dom rx low 32 bits</description>
-    <name>dom_rx_lo</name>
-    <unsignedIntArray length="100" />
-  </outputParameter>
-  <outputParameter>
-    <description>dom tx high 32 bits</description>
-    <name>dom_tx_hi</name>
-    <unsignedIntArray length="100" />
-  </outputParameter>
-  <outputParameter>
-    <description>dom tx low 32 bits</description>
-    <name>dom_tx_lo</name>
-    <unsignedIntArray length="100" />
-  </outputParameter>
-  <outputParameter>
-    <description>dor rx high 32 bits</description>
-    <name>dor_rx_hi</name>
-    <unsignedIntArray length="100" />
-  </outputParameter>
-  <outputParameter>
-    <description>dor rx low 32 bits</description>
-    <name>dor_rx_lo</name>
-    <unsignedIntArray length="100" />
-  </outputParameter>
 </stf:test>
-
-
-
-

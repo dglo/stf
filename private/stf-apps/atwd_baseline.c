@@ -38,13 +38,13 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
       (atwd_chip_a_or_b) ? 
       DOM_HAL_DAC_ATWD0_TRIGGER_BIAS : DOM_HAL_DAC_ATWD1_TRIGGER_BIAS;
    int i;
-   double minv, maxv;
-   double sm=0, sm2=0;
+   unsigned minv, maxv, valid_max, valid_min;
    const int cnt = 128;
    short *buffer = (short *) calloc(cnt, sizeof(short));
    short *channels[4] = { NULL, NULL, NULL, NULL };
-   double *values = (double *) calloc(loop_count, sizeof(double));
-   double prob, good_rms, sigma, valid_max, valid_min;
+   unsigned *values = (unsigned *) calloc(loop_count, sizeof(unsigned));
+   unsigned sm = 0, sm2 = 0;
+   double prob, good_rms, sigma;
    const int trigger_mask = (atwd_chip_a_or_b) ?
       HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
 
@@ -67,7 +67,6 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
    }
 
    prescanATWD(trigger_mask);
-   prescanATWD(trigger_mask);
 
    /* clear histogram...
     */
@@ -75,7 +74,7 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
    
    for (i=0; i<(int)loop_count; i++) {
       int j;
-      double sum = 0;
+      unsigned sum = 0;
 
       /* B. The ATWD trigger mask is written according to 
        * ATWD_TRIG_FORCED_OR_SPE
@@ -100,10 +99,10 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
       for (j=0; j<cnt; j++) sum+=buffer[j];
 
       /* average and record it... */
-      values[i] = sum/(cnt*1.0);
+      values[i] = sum/cnt;
 
       /* histogram it... */
-      atwd_baseline_histogram[((int) values[i])&0x3ff ] ++;
+      atwd_baseline_histogram[ values[i]&0x3ff ] ++;
 
       /* E. repeat...
        */
@@ -119,7 +118,7 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
    sm /= loop_count;
 
    for (i=0; i<loop_count; i++) {
-      const double diff = values[i] - sm;
+      const int diff = (int) values[i] - sm;
       sm2 += diff*diff;
    }
    good_rms = sqrt( (1.0/(loop_count-1)) * sm2 );
@@ -131,24 +130,22 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
 
    prob = 0.01/loop_count;
 
-   if(prob>=1e-5 && prob<=1e-4)       sigma=5.4;
-   else if (prob>=1e-6 && prob<1e-5)  sigma=5.9;
-   else if (prob>=1e-7 && prob<1e-6)  sigma=6.35;
-   else if (prob>=1e-8 && prob<1e-7)  sigma=6.75;
-   else if (prob>=1e-9 && prob<1e-8)  sigma=7.15;
+   if(prob>=1e-5 && prob<1e-4)        sigma=4.4;
+   else if (prob>=1e-6 && prob<1e-5)  sigma=4.9;
+   else if (prob>=1e-7 && prob<1e-6)  sigma=5.35;
+   else if (prob>=1e-8 && prob<1e-7)  sigma=5.75;
+   else if (prob>=1e-9 && prob<1e-8)  sigma=6.15;
    else sigma=0;
 
-   valid_max = sm + sigma*(good_rms)+1.0;
-   valid_min = sm - sigma*(good_rms)-1.0;
-
-   /* printf("sigma: %f valid_max: %f valid_min: %f good_rms: %f sm: %f maxv: %f minv: %f\r\n", sigma, valid_max, valid_min, good_rms, sm, maxv, minv);*/
+   valid_max = sm + sigma*(good_rms);
+   valid_min = sm - sigma*(good_rms);
 
    free(buffer);
    free(values);   
 
    if(*atwd_baseline_mean >200 || *atwd_baseline_mean <100)
      return FALSE;
-   if(maxv >valid_max || minv <valid_min)
+   if(*atwd_baseline_max >valid_max || *atwd_baseline_min <valid_min)
      return FALSE;
    if(*atwd_baseline_rms >2)
      return FALSE;

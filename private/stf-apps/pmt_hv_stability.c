@@ -13,7 +13,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <math.h>
 
 #include "stf/stf.h"
@@ -21,8 +20,8 @@
 
 /* PASS/FAIL criteria */
 #define HV_MAX_RMS_MVOLT      1000  /* Maximum RMS, in millivolts */
-#define HV_MEAN_ERR_MVOLT    15000  /* Maximum difference of the mean from the set value, mV */
-#define HV_MAX_MIN_ERR_MVOLT 15000  /* Maximum difference of min/max values from the mean, mV */
+#define HV_MEAN_ERR_MVOLT     5000  /* Maximum difference of the mean from the set value, mV */
+#define HV_MAX_MIN_ERR_MVOLT  5000  /* Maximum difference of min/max values from the mean, mV */
 
 BOOLEAN pmt_hv_stabilityInit(STF_DESCRIPTOR *desc) { return TRUE; }
 
@@ -31,7 +30,6 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
                               unsigned int run_time_sec,
                               unsigned int sample_time_ms,
                               unsigned int init_wait_sec,
-                              char **hv_id,
                               unsigned int* hv_read_mean_mvolt,
                               unsigned int* hv_read_min_mvolt,
                               unsigned int* hv_read_max_mvolt,
@@ -59,12 +57,6 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
     halPowerUpBase();
     halEnableBaseHV();
     halWriteActiveBaseDAC(hv_set_volt * 2);
-
-    /* Read the HV base ID */
-    *hv_id = (char *) halHVSerial();
-    #ifdef VERBOSE
-    printf("DEBUG: HV ID is %s\r\n", *hv_id);
-    #endif
 
     /* If requested, wait a while before starting data collection */
     /* halUSleep() doesn't seem to like really large values (not sure */
@@ -132,7 +124,6 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
 
     /* Turn the HV off */
     halPowerDownBase();
-    halUSleep(2000000); /* allow 2s for hv to stabilize... */
 
     /* Check for failure */
     if (*hv_read_rms_mvolt > HV_MAX_RMS_MVOLT) 

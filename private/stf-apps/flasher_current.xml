@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>flasher_current</name>
+  <description>Flasher Board LED Current Test</description>
+
+  <version major="1" minor="0"/>
+
+  <inputParameter>
+    <description>ATWD A or B (0=A,1=B)</description>
+    <name>atwd_chip_a_or_b</name>
+    <unsignedInt default="0" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Flasher Brightness</description>
+    <name>flasher_brightness</name>
+    <unsignedInt default="127" maxValue="255" minValue="1"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Flasher Pulse Width</description>
+    <name>flasher_pulse_width</name>
+    <unsignedInt default="127" maxValue="127" minValue="1"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>LED Trigger Count (each LED)</description>
+    <name>led_trig_cnt</name>
+    <unsignedInt default="100" maxValue="5000" minValue="1"/>
+  </inputParameter>
+
+  <outputParameter>
+    <description>Predicted Current Pulse Height (ATWD units)</description>
+    <name>predicted_current</name>
+	<unsignedInt/>
+  </outputParameter>  
+
+  <outputParameter>
+    <description>Max Error in Pulse Height (ATWD units)</description>
+    <name>max_current_err</name>
+	<unsignedInt/>
+  </outputParameter>  
+
+  <outputParameter>
+    <description>LED with Maximum Current Error</description>
+    <name>worst_led</name>
+	<unsignedInt/>
+  </outputParameter>  
+    
+  <outputParameter>
+    <description>Averaged LED Current Waveform (+1024 offset)</description>
+    <name>led_avg_current</name>
+	<unsignedIntArray length="128" />
+  </outputParameter>  
+
+</stf:test>
+
+
+
+
+
+
+
+

@@ -1,18 +1,18 @@
 <project>
 	<name>stf</name>
-	<packages default="icecube.daq.stf.autogen">
-		icecube.daq.stf.autogen
+	<packages default="icecube.daq.stf">
+		icecube.daq.stf
 	</packages>
 	<uses>
 		<libs>
                   domhub-common.jar
-		  daq-db-common.jar
-		  daq-db-stftest.jar
+		  daq-db.jar
                 </libs>
 		<tools>log4j.jar</tools>
 	</uses>
 	<test>
 		<uses>
+			<libs/>
 			<tools>junit.jar</tools>
 		</uses>
 	</test>

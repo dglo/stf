@@ -2,11 +2,9 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "stf/stf.h"
 #include "stf-apps/temperature.h"
-#include "hal/DOM_MB_pld.h"
 
 BOOLEAN temperatureInit(STF_DESCRIPTOR *d) {
    return TRUE;
@@ -27,9 +25,8 @@ static float formatTemp(int temp) {
  }
 
 BOOLEAN temperatureEntry(STF_DESCRIPTOR *d,
-                    unsigned env_temp,
-                    unsigned *temp) {
-
-  *temp= (formatTemp(readTemp())+273.0)*1000.0;
-  return TRUE;
+                         unsigned env_temp,
+                         unsigned *temp) {
+   return abs((*temp= (formatTemp(readTemp())+273.0)*1000.0)-env_temp)<10;
 }
+

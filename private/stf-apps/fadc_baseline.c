@@ -69,7 +69,8 @@ BOOLEAN fadc_baselineEntry(STF_DESCRIPTOR *d,
            time_out = hal_FPGA_TEST_readout(NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,0,waveform,512,HAL_FPGA_TEST_TRIGGER_FADC);
   /*    2.Calculate the mean of all the 256 samples values (integers ok, range [0-1023]):
           this is the baseline for this waveform.*/
-	   sample_sum = sample_min = sample_max = waveform[0];
+	   sample_sum=0;
+           sample_min = sample_max = waveform[0];
 	   for(lp1=1;lp1<512;lp1++)
 	   {
 	     /*printf("%d",waveform[lp1]);*/
@@ -131,7 +132,7 @@ BOOLEAN fadc_baselineEntry(STF_DESCRIPTOR *d,
   /*    4.Baseline mean value < 250*/
   if(baseline_mean>=250) return FALSE;
   /*    5.Maximum-Minimum < 5*/
-  if(baseline_max-baseline_min>10) return FALSE;
+  if(baseline_max-baseline_min>=7) return FALSE;
   /*    6.Baseline RMS < 3*/
   if(baseline_rms>=3000) return FALSE;
 

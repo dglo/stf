@@ -138,9 +138,6 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
 
         /* CPU-trigger the ATWD */
         hal_FPGA_TEST_trigger_forced(trigger_mask);
-
-        /* Wait for done */
-        while (!hal_FPGA_TEST_readout_done(trigger_mask));
         
         /* Read out one waveform for the channel requested */
         channels[atwd_channel] = buffer;
@@ -217,10 +214,7 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
             
             /* Discriminator-trigger the ATWD */
             hal_FPGA_TEST_trigger_disc(trigger_mask);
-
-            /* Wait for done */
-            while (!hal_FPGA_TEST_readout_done(trigger_mask));
-
+            
             /* Read out one waveform for the channel requested */
             channels[atwd_channel] = buffer;
             hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], channels[3], 
@@ -367,7 +361,6 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
     
     /* Turn the HV off */
     halPowerDownBase();
-    halUSleep(2000000);  /* allow 2s for hv to stabilize... */
 
     /* Free allocated structures */
     free(buffer);

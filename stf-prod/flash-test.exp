@@ -1,6 +1,0 @@
-send "%value% fset\r"
-expect "^> "
-send "$01000000 $00800000 2 / install-image\r"
-expect "^install: all flash data will be erased: are you sure"
-send "y"
-expect "^> "

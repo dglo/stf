@@ -4,49 +4,7 @@
   <name>flasher_brightness</name>
   <description>Flasher Board LED Brightness Test</description>
 
-  <version major="1" minor="7"/>
-
-  <inputParameter>
-    <description>DAC setting for ATWD sampling speed</description>
-    <name>atwd_sampling_speed_dac</name>
-    <unsignedInt default="850" maxValue="4095" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <description>DAC setting for ATWD Ramp Top Voltage</description>
-    <name>atwd_ramp_top_dac</name>
-    <unsignedInt default="2300" maxValue="4095" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <description>DAC setting for ATWD Ramp Bias current </description>
-    <name>atwd_ramp_bias_dac</name>
-    <unsignedInt default="350" maxValue="4095" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <description>DAC setting for ATWD Analog Reference Voltage</description>
-    <name>atwd_analog_ref_dac</name>
-    <unsignedInt default="2250" maxValue="4095" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <description>DAC setting for ATWD Pedestal Voltage</description>
-    <name>atwd_pedestal_dac</name>
-    <unsignedInt default="2130" maxValue="4095" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <description>DAC setting for Flasher Pulse Offset Voltage</description>
-    <name>atwd_flasher_ref</name>
-    <unsignedInt default="450" maxValue="4095" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <description>Delay from Flasher Trigger to ATWD Launch</description>
-    <name>atwd_led_delay</name>
-    <unsignedInt default="4" maxValue="15" minValue="0"/>
-  </inputParameter>
+  <version major="1" minor="0"/>
 
   <inputParameter>
     <description>ATWD A or B (0=A,1=B)</description>
@@ -70,24 +28,6 @@
     <description>Flasher Board ID</description>
     <name>flasher_id</name>
     <string/>
-  </outputParameter>
-
-  <outputParameter>
-    <description>Flasher Board CPLD Configuration Time (us)</description>
-    <name>config_time_us</name>
-    <unsignedInt/>
-  </outputParameter>
-
-  <outputParameter>
-    <description>Flasher Board Clock Validation Time (us)</description>
-    <name>valid_time_us</name>
-    <unsignedInt/>
-  </outputParameter>
-
-  <outputParameter>
-    <description>Flasher Board Reset Time (us)</description>
-    <name>reset_time_us</name>
-    <unsignedInt/>
   </outputParameter>
 
   <outputParameter>
@@ -119,28 +59,10 @@
     <name>worst_brightness_led</name>
 	<unsignedInt/>
   </outputParameter>  
-
-  <outputParameter>
-    <description>Minimum Slope of Brightness Fit (times 100)</description>
-    <name>min_slope_x_100</name>
-	<unsignedInt/>
-  </outputParameter>  
-
-  <outputParameter>
-    <description>LED with Minimum Slope of Brightness Fit</description>
-    <name>min_slope_led</name>
-	<unsignedInt/>
-  </outputParameter>  
-
-  <outputParameter>
-    <description>Total Number of LEDs Failing Test</description>
-    <name>failing_led_cnt</name>
-	<unsignedInt/>
-  </outputParameter>  
     
   <outputParameter>
-    <description>TTL Current Waveform (+1024 offset)</description>
-    <name>led_ttl_current</name>
+    <description>Averaged LED Current Waveform (+1024 offset)</description>
+    <name>led_avg_current</name>
 	<unsignedIntArray length="128" />
   </outputParameter>  
 

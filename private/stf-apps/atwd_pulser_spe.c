@@ -16,7 +16,7 @@ BOOLEAN atwd_pulser_speInit(STF_DESCRIPTOR *d) {
 }
 
 BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
-                    unsigned atwd_sampling_speed,
+                    unsigned atwd_sampling_speed_dac,
                     unsigned atwd_ramp_top_dac,
                     unsigned atwd_ramp_bias_dac,
                     unsigned atwd_analog_ref_dac,
@@ -34,24 +34,20 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
                     unsigned *atwd_waveform_amplitude,
                     unsigned *atwd_waveform_position,
                     unsigned *atwd_expected_amplitude,
-                    unsigned *atwd_waveform_pulser_spe,
-                    unsigned *atwd_sampling_speed_dac) {
+                    unsigned *atwd_waveform_pulser_spe) {
    const int ch = (atwd_chip_a_or_b) ? 0 : 4;
    int i;
+   DOM_HAL_FPGA_PULSER_RATES rate;
    const int cnt = 128;
    short *channels[4] = { NULL, NULL, NULL, NULL };
    short *buffer = (short *) calloc(128, sizeof(short));
    int *sum_waveform = (int *) calloc(128, sizeof(int));
    int trigger_mask = (atwd_chip_a_or_b) ? 
       HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
-   int fe_pulser_dac, use_pulser=1;
-
-   /* pretest A) computer atwd_sampling speed dac... */
-   *atwd_sampling_speed_dac = 
-      calcATWDSamplingSpeedDAC(ch, trigger_mask, atwd_sampling_speed);
+   int spe_dac_nominal, fe_pulser_dac, pulser_or_not=1;
 
    /* pretest 1) all five atwd dac settings are programmed... */
-   halWriteDAC(ch, *atwd_sampling_speed_dac);
+   halWriteDAC(ch, atwd_sampling_speed_dac);
    halWriteDAC(ch+1, atwd_ramp_top_dac);
    halWriteDAC(ch+2, atwd_ramp_bias_dac);
    halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF, atwd_analog_ref_dac);
@@ -63,10 +59,9 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
 
    /* pretest 3) fe pulser dac gets zero */
    halWriteDAC(DOM_HAL_DAC_INTERNAL_PULSER, 0);
-   hal_FPGA_TEST_set_deadtime(400);
    
    /* pretest 4) turn on fe pulser */
-   if (scanSPE(atwd_pedestal_dac, triggerable_spe_dac, use_pulser)) {
+   if (scanSPE(atwd_pedestal_dac, triggerable_spe_dac, pulser_or_not)) {
       /* no triggerable value found... */
       hal_FPGA_TEST_disable_pulser();
       free(buffer);
@@ -102,7 +97,7 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
    fe_pulser_dac = (int) (pulser_amplitude_uvolt * (25.0/5000.0));
    if (fe_pulser_dac>1023) fe_pulser_dac = 1023;
    halWriteDAC(DOM_HAL_DAC_INTERNAL_PULSER, fe_pulser_dac);
-   hal_FPGA_TEST_set_pulser_rate(DOM_HAL_FPGA_PULSER_RATE_78k);
+   hal_FPGA_TEST_set_pulser_rate(rate);
    hal_FPGA_TEST_enable_pulser();
 
    /* wait for dacs, et al... */
@@ -147,18 +142,16 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
    /* 8) reverse waveform */
    reverseATWDIntWaveform(atwd_waveform_pulser_spe);
 
-   /* 9) find max index for the REAL pulse, excluding 50~80 */
+   /* 9) find max index */
    {   int maxIdx = 0;
        unsigned maxValue = atwd_waveform_pulser_spe[maxIdx];
        int half_max, hmxIdx = 127, hmnIdx = 0;
        
        for (i=1; i<128; i++) {
-	 if (i>=80 || i<=50) {
-	   if (maxValue < atwd_waveform_pulser_spe[i]) {
+	  if (maxValue < atwd_waveform_pulser_spe[i]) {
 	     maxIdx = i;
 	     maxValue = atwd_waveform_pulser_spe[i];
 	  }
-	 }
        }
 
        /* 10) */
@@ -169,20 +162,16 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
 	  (*atwd_waveform_amplitude)/2 + *atwd_baseline_waveform;
 
        for (i=maxIdx; i<cnt; i++) {
-	 if (i>=80 || i<=50) {
-	   if (atwd_waveform_pulser_spe[i]<half_max) {
+	  if (atwd_waveform_pulser_spe[i]<half_max) {
 	     hmxIdx = i;
 	     break;
 	  }
-	 }
        }
        for (i=maxIdx; i>=0; i--) {
-	 if (i>=80 || i<=50) {
-	   if (atwd_waveform_pulser_spe[i]<half_max) {
+	  if (atwd_waveform_pulser_spe[i]<half_max) {
 	     hmnIdx = i;
 	     break;
 	  }
-	 }
        }
 
        /* 14 */
@@ -192,15 +181,23 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
    }
    
    *atwd_expected_amplitude = (int)
-      (pulser_amplitude_uvolt * 25.0/5000.0/pow(8, atwd_channel));
+      (pulser_amplitude_uvolt * 40.0/5000.0/pow(8, atwd_channel));
 
    free(buffer);
 
    return 
-      *atwd_waveform_position > 4 &&
-      *atwd_waveform_position < 12 &&
-      ((atwd_channel==2 && *atwd_waveform_width>=2) || (atwd_channel!=2 && *atwd_waveform_width>2)) &&
-      *atwd_waveform_width < 6 &&
-      *atwd_waveform_amplitude > *atwd_expected_amplitude/2 &&
-      *atwd_waveform_amplitude < *atwd_expected_amplitude*3/2;
+      *atwd_waveform_position > 2 &&
+      *atwd_waveform_position < 10 &&
+      *atwd_waveform_width > 2 &&
+      *atwd_waveform_width < 6;
 }
+
+
+
+
+
+
+
+
+
+

@@ -4,7 +4,7 @@
   <name>pmt_hv_ramp</name>
   <description>PMT HV Ramp Up/Down Test</description>
 
-  <version major="1" minor="2"/>
+  <version major="1" minor="0"/>
 
   <inputParameter>
     <description>HV min voltage to start ramp (V)</description>
@@ -23,19 +23,7 @@
     <name>hv_step_volt</name>
     <unsignedInt default="50" maxValue="300" minValue="10"/>
   </inputParameter>
-
-  <outputParameter>
-    <description>HV Board ID</description>
-    <name>hv_id</name>
-    <string/>
-  </outputParameter>
   
-  <outputParameter>
-    <description>Maximum error between HV set and read values (mV)</description>
-    <name>hv_max_diff_mv</name>
-    <unsignedInt/>
-  </outputParameter>  
-
   <outputParameter>
     <description>Requested HV level with the greatest error (mV)</description>
     <name>hv_worst_set_mvolt</name>
@@ -43,8 +31,8 @@
   </outputParameter>  
 
   <outputParameter>
-    <description>Average error between HV set and read values (mV)</description>
-    <name>hv_avg_diff_mv</name>
+    <description>Read HV level with the greatest error (mV)</description>
+    <name>hv_worst_read_mvolt</name>
     <unsignedInt/>
   </outputParameter>  
 

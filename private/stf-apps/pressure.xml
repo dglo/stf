@@ -19,7 +19,7 @@
   <inputParameter>
     <description>Number of ADC values to acquire to compute a mean and spread</description>
     <name>loop_count</name>
-    <unsignedInt default="1925" minValue="2" maxValue="1000"/>
+    <unsignedInt default="1925" minValue="0" maxValue="1000000"/>
   </inputParameter>
 
   <outputParameter>

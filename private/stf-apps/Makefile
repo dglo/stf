@@ -3,7 +3,7 @@
 #
 .SUFFIXES: .c .o .S .elf .srec .xml .html .tab .bin
 
-%.o : %.c *.h
+.c.o:
 	$(CC) -c $(CFLAGS) $<
 
 .S.o:
@@ -23,23 +23,30 @@
 TESTOBJS  = ADC.o memory.o StfEg.o atwd_pedestal.o atwd_baseline.o \
 	pmt_hv_ramp.o pmt_hv_stability.o pressure.o pulser_spe_mpe.o \
 	atwd_pedestal_sweep_forced.o atwd_pulser_spe.o atwd_pedestal_spe.o \
-	atwd_clock1x_forced.o flasher_brightness.o flasher_width.o \
+	atwd_clock1x_forced.o pmt_pv_ratio.o flasher_current.o \
 	fadc_fe_pulser.o fadc_baseline.o fadc_fe_forced.o disc_scan.o \
 	loopback_lc.o atwd_pedestal_noise.o temperature.o atwd_pmt_spe.o \
-	fadc_fe_external.o atwd_pmt_led.o atwd_clock2x_forced.o \
-	flasher_clock.o atwd_led_nopmt.o atwd_sample_periode.o
 
-XMLFILENAMES = $(TESTOBJS:.o=.xml)
-XMLPATH      = $(XMLDESCPATH)
-XMLFILES     = $(addprefix $(XMLPATH)/,$(XMLFILENAMES))
-CFILES       = $(TESTOBJS:.o=.c)
+XMLFILES  = $(TESTOBJS:.o=.xml)
+CFILES    = $(TESTOBJS:.o=.c)
+XMLTEMPLATES = $(TESTOBJS:%.o=%-template.xml)
+
+$(XMLTEMPLATES): %-template.xml: %.xml
+	xmln $< | awk -f ../stf-sfe/stftotab.awk | awk -f mktemplate.awk > $@
 
 #
 # generated links...
 #
 HDRFILES  = $(TESTOBJS:.o=.h)
 
-all: stfserv.elf menu.elf echomode.elf $(GENJAVA) wiggle.elf
+#
+# java code gen...
+#
+GENJAVA=../../../stf/src/icecube/daq/stf/autogen/STFParameterLookup.java
+
+all: stfserv.elf menu.elf echomode.elf $(GENJAVA)
+
+java: $(GENJAVA)
 
 clean:
 	rm -f *.o *.i *.bin *.elf *.srec \
@@ -62,11 +69,7 @@ menu.elf: menu.o $(EXOBJS) $(STFOBJS) $(LIBHAL)
 
 echomode.elf: echomode.o $(LIBHAL)
 	$(LD) --script=$(KERNELX) -o echomode.elf \
-		$(KOBJS) echomode.o $(LIBHAL) $(SYSLIBS)
-
-wiggle.elf: wiggle.o $(LIBHAL)
-	$(LD) --script=$(KERNELX) -o wiggle.elf \
-		$(KOBJS) wiggle.o $(LIBHAL) $(SYSLIBS)
+		$(KOBJS) echomode.o $(STFOBJS) $(EXOBJS) $(LIBHAL) $(SYSLIBS)
 
 ../bin/%.bin.gz: %.bin; gzip -c $< > $@
 
@@ -80,7 +83,7 @@ stfDirectory.h stfDirectory.c: $(XMLFILES) gendir Makefile
 $(CFILES): %.c: %.h
 
 $(HDRFILES): stfDirectory.h
-	if [ ! -h $@ ]; then ln -s stfDirectory.h $@; fi
+	if [[ ! -h $@ ]]; then ln -s stfDirectory.h $@; fi
 
 ../bin/stfserv: stfserv.o $(STFOBJS) $(EXOBJS)
 	gcc -o stfserv stfserv.o $(STFOBJS) $(EXOBJS) $(LIBHAL) -lm -lexpat
@@ -90,3 +93,10 @@ $(HDRFILES): stfDirectory.h
 
 ../bin/echomode: echomode.o $(EXOBJS)
 	gcc -o echomode echomode.o $(EXOBJS) $(LIBHAL) -lm
+
+$(GENJAVA): $(XMLFILES) tcal.xml genspl.awk
+	xmln $(XMLFILES) tcal.xml | awk -f ../stf-sfe/stftotab.awk | \
+		awk -f genspl.awk > $(GENJAVA)
+
+templates.tar.gz: $(XMLTEMPLATES)
+	tar cf - $(XMLTEMPLATES) | gzip -c > templates.tar.gz

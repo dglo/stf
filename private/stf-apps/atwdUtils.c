@@ -134,10 +134,10 @@ float mpeDACToUVolt(int dac, int pedestal_dac) {
 int upper_extreme_rate(int spe_dac_nominal) {
       /* set spe threshold dac */
       halWriteDAC(DOM_HAL_DAC_SINGLE_SPE_THRESH, spe_dac_nominal*1.05+1);
-      halUSleep(100000); /* let dac settle */
+      halUSleep(1000); /* let dac settle */
 
       /* wait for counts to show up */
-      halUSleep(2 * 100 * 1000);
+      halUSleep(2 * 10 * 1000);
       /* readout the counts... */
       return (int)
         (hal_FPGA_TEST_get_spe_rate());
@@ -146,10 +146,10 @@ int upper_extreme_rate(int spe_dac_nominal) {
 int lower_extreme_rate(int spe_dac_nominal) {
       /* set spe threshold dac */
       halWriteDAC(DOM_HAL_DAC_SINGLE_SPE_THRESH, spe_dac_nominal*0.95-1);
-      halUSleep(100000); /* let dac settle */
+      halUSleep(1000); /* let dac settle */
 
       /* wait for counts to show up */
-      halUSleep(2 * 100 * 1000);
+      halUSleep(2 * 10 * 1000);
       /* readout the counts... */
       return (int)
         (hal_FPGA_TEST_get_spe_rate());
@@ -220,141 +220,23 @@ int scanSPE(int atwd_pedestal_dac, unsigned *ret, int use_pulser) {
          }
          else {
             /* printf("scanSPE: ok: dac=%d, rate=%u\r\n", i, rates); */
-            *ret = i + 5;
+            *ret = i + 2;
             break;
          }
       }
       /* printf("scanSPE: dac=%d, rate=%u\r\n", i, rates); */
       }
    }
-   else if (lower_extreme_rate(spe_dac_nominal)>=0) {
+   else if (lower_extreme_rate(spe_dac_nominal)==0) {
      *ret = spe_dac_nominal*0.95-1;
+     retv=1;
+   }
+   else if (upper_extreme_rate(spe_dac_nominal)==0) {
+     *ret = spe_dac_nominal*1.05+1;
      retv=1;
    }
 
    if (use_pulser) hal_FPGA_TEST_disable_pulser();
 
    return retv;
-}
-
-/* find the period of a signal given
- * the (positive only) autocorrelegram...
- *
- * 1) go till we have a zero
- * 2) go while we're increasing...
- * 3) return peak value...
- *
- * return index or -1 on error...
- */
-static float findFirstPeak(unsigned *w) {
-   int i, prev=0;
-
-   for (i=0; i<128; i++) {
-      if (w[i]==0) break;
-   }
-
-   if (i==0 || i==128) return -1;
-   
-   while (i<128 && w[i]>=prev) {
-      prev = w[i];
-      i++;
-   }
-
-   if (i>=127) return -1;
-
-   /* fit a parabola here...
-    */
-   {  const float y1 = w[i-2];
-      const float y2 = w[i-1];
-      const float y3 = w[i];
-      const float b = (4*y2 - y3 - 3*y1)/2;
-      const float a = (-2*y2 + y3 + y1)/2;
-      return (i-2) - b/(2*a);
-   }
-}
-
-/* find period in an atwd waveform
- */
-static unsigned findPeriod(unsigned *w) {
-   int *mn = (unsigned *) calloc(128, sizeof(unsigned));
-   unsigned *cg = (unsigned *) calloc(128, sizeof(unsigned));
-   int i, j;
-   double sum = 0;
-   unsigned period;
-
-   /* first subtract mean...
-    */
-   for (i=0; i<128; i++) sum += w[i];
-   sum/=128;
-
-   for (i=0; i<128; i++) mn[i] = (int)w[i] - (int) sum;
-
-   /* now compute autocorrelagram */
-   for (i=0; i<128; i++) {
-      int val = 0;
-      for (j=0; j<128; j++)
-	 /* FIXME: this is wrong, corr can be negative! */
-	 val += mn[j]*mn[(i+j)&0x7f];
-      cg[i] = (val<0) ? 0 : val;
-   }
-
-
-   period = (unsigned) (findFirstPeak(cg)*20e6);
-
-   free(mn);
-   free(cg);
-   return period;
-}
-
-unsigned calcATWDSamplingSpeed(unsigned *wf, 
-                               unsigned trigger_mask,
-                               unsigned loop_count) {
-   halSelectAnalogMuxInput(DOM_HAL_MUX_OSC_OUTPUT);
-   halUSleep(100);
-   prescanATWD(trigger_mask);
-   getSummedWaveform(loop_count, trigger_mask, 3, wf);
-   halSelectAnalogMuxInput(DOM_HAL_MUX_PMT_LED_CURRENT);
-   halUSleep(100);
-   return findPeriod(wf);
-}
-
-unsigned calcATWDSamplingSpeedDAC(int dac_ch, 
-                                  unsigned trigger_mask,
-                                  int atwd_sampling_speed) {
-   unsigned *wf = calloc(128, sizeof(unsigned));
-   int d1 = 4096/4, d2 = 4096/2; /* start values... */
-   int s1, s2;
-   int i;
-
-   halWriteDAC(dac_ch, d1);
-   s1 = calcATWDSamplingSpeed(wf, trigger_mask, 100)/1000000;
-   halWriteDAC(dac_ch, d2);
-   s2 = calcATWDSamplingSpeed(wf, trigger_mask, 100)/1000000;
-
-   for (i=0; i<10; i++) {
-      if (s1 == atwd_sampling_speed) { free(wf); return d1; }
-      if (s2 == atwd_sampling_speed) { free(wf); return d2; }
-      
-      if (d1 == d2) { free(wf); return d1; }
-      if (s1 == s2) { free(wf); return d1; }
-      
-      {  const float m = (float)(s2 - s1) / (float)(d2 - d1);
-         const int next = (atwd_sampling_speed - s1)/m + d1;
-
-         if (abs(next - d1) < abs(next - d2)) {
-            d2 = next;
-            halWriteDAC(dac_ch, d2);
-            s2 = calcATWDSamplingSpeed(wf, trigger_mask, 100)/1000000;
-         }
-         else {
-            d1 = next;
-            halWriteDAC(dac_ch, d1);
-            s1 = calcATWDSamplingSpeed(wf, trigger_mask, 100)/1000000;
-         }
-      }
-   }
-
-   /* not converging, return "random" data... */
-   free(wf);
-   return (d1 + d2) / 2;
 }

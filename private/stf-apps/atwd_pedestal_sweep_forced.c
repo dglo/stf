@@ -34,8 +34,6 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
    unsigned pedestal_nominal, nominal_mvolts,
       pedestal_half_range, half_range_mvolts,
       pedestal_full_range, full_range_mvolts;
-   unsigned testLow;
-   unsigned testHigh;
    const int cnt = 4096;
    short *channels[4] = { NULL, NULL, NULL, NULL };
    short *buffer = (short *) calloc(128, sizeof(short));
@@ -55,8 +53,7 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
 
    /* clear atwd */
    prescanATWD(trigger_mask);
-   testLow=0;
-   testHigh=0x3ff;
+
    for (i=0; i<4096; i++) {
       int j;
       
@@ -75,13 +72,8 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
 			    cnt, NULL, 0, trigger_mask);
 
       /* get summed waveform... */
-      /* stuck bits can only be detected in non-pedestal_subtracted data */
-      /* binary data from the fpga must be converted back to gray codee */
-      for (j=0; j<128; j++) {
-	sum+=buffer[j];
-	testLow |=buffer[j]>>1^buffer[j];
-	testHigh&=buffer[j]>>1^buffer[j];
-      }
+      for (j=0; j<128; j++) sum+=buffer[j];
+
       /* add to array... */
       atwd_pedestal_sweep_forced[i] = sum/128;
    }
@@ -138,16 +130,12 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
       (int)(100.0*
 	    (*half_range_counts_per_volt) /
 	    (*full_range_counts_per_volt) );
-   /* If some bit(s) are stuck, embed the data in an output variable */
-   if (!(testLow==0x3ff&&testHigh==0))
-	*linearity_pedestal_percent|=testHigh<<22|testLow<<12;
+
    return 
       *full_range_counts_per_volt > 400 &&
       *full_range_counts_per_volt < 700 &&
-      *linearity_pedestal_percent > 90 &&
-      *linearity_pedestal_percent < 110 &&
-      testLow == 0x3ff &&
-      testHigh == 0 ; 
+      *linearity_pedestal_percent > 95 &&
+      *linearity_pedestal_percent < 105; 
 }
 
 
