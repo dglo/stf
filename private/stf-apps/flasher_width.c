@@ -33,7 +33,7 @@
 
 /* Pass/fail defines */
 /* Width in ATWD samples here is *approximately* same in ns */
-#define FB_MIN_ATWD_WIDTH          7
+#define FB_MIN_ATWD_WIDTH         10
 #define FB_MAX_ATWD_WIDTH         95
 
 /* Rounding convert to int */

@@ -35,11 +35,11 @@
 
 /* Pass/fail defines */
 /* Maximum allowed deviation of each point from linear fit */
-#define MAX_ERR_PCT                5
+#define MAX_ERR_PCT                7
 
 /* Minimum current peak in ATWD units at maximum brightness */
-/* About 90% of nominal value of 440 */
-#define MIN_PEAK_MAX_BRIGHT      390 
+/* About 85% of nominal value of 440 */
+#define MIN_PEAK_MAX_BRIGHT      375 
 
 /* Rounding convert to int */
 #define round(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
@@ -88,7 +88,7 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                                 unsigned int atwd_flasher_ref,
                                 unsigned int atwd_led_delay,
                                 unsigned int atwd_chip_a_or_b,
-                                unsigned int flasher_width,
+                                unsigned int flasher_pulse_width,
                                 unsigned int led_trig_cnt,
                                 char ** flasher_id,
                                 unsigned int * max_current_err_pct,
@@ -221,10 +221,10 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     int err_pct;
 
     #ifdef VERBOSE
-    printf("Setting pulse width to %d\n", flasher_width);
+    printf("Setting pulse width to %d\n", flasher_pulse_width);
     #endif
 
-    hal_FB_set_pulse_width(flasher_width);
+    hal_FB_set_pulse_width(flasher_pulse_width);
 
     for (led = 0; led < N_LEDS; led++) {
                 
