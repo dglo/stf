@@ -23,9 +23,6 @@
 #include "stf/stf.h"
 #include "hal/DOM_MB_hal.h"
 
-/* Lots of information on stdout; for use with menu.c */
-#define VERBOSE
-
 /* Pass/fail defines */
 #define MAX_ERR_VOLT  5
 

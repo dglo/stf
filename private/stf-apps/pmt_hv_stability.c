@@ -18,9 +18,6 @@
 #include "stf/stf.h"
 #include "hal/DOM_MB_hal.h"
 
-/* Lots of information on stdout; for use with menu.c */
-#define VERBOSE
-
 /* PASS/FAIL criteria */
 #define HV_MAX_RMS_MVOLT      1000  /* Maximum RMS, in millivolts */
 #define HV_MEAN_ERR_MVOLT     5000  /* Maximum difference of the mean from the set value, mV */

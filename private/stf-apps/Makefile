@@ -23,7 +23,7 @@
 TESTOBJS  = ADC.o memory.o StfEg.o atwd_pedestal.o atwd_baseline.o \
 	pmt_hv_ramp.o pmt_hv_stability.o pressure.o pulser_spe_mpe.o \
 	atwd_pedestal_sweep_forced.o atwd_pulser_spe.o atwd_pedestal_spe.o \
-	atwd_clock1x_forced.o \
+	atwd_clock1x_forced.o pmt_pv_ratio.o \
 	fadc_fe_pulser.o fadc_baseline.o fadc_fe_forced.o
 
 XMLFILES  = $(TESTOBJS:.o=.xml)

@@ -78,8 +78,6 @@ void stfInitTest(STF_DESCRIPTOR *sd) {
    halWriteDAC(DOM_HAL_DAC_FAST_ADC_REF , xxx );
    halWriteDAC(DOM_HAL_DAC_INTERNAL_PULSER , 500 );
    halWriteDAC(DOM_HAL_DAC_FE_AMP_LOWER_CLAMP , xxx );
-   halWriteDAC(DOM_HAL_DAC_SPARE_ADC0 , xxx );
-   halWriteDAC(DOM_HAL_DAC_SPARE_ADC1 , xxx );
    }
    
    /* Thorsten recommends we wait a bit for these things to
