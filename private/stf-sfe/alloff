@@ -1,0 +1,26 @@
+#!/bin/sh
+
+#
+# include common functions, variables...
+#
+source /usr/lib/cgi-bin/stf/xml/bin/common.sh
+
+#
+# remove old temp files...
+#
+rm -f /tmp/dhtab.[0-9]+
+rm -f /tmp/stf
+
+echo "Content-type: text/html"
+echo ""
+echo "<html><body>"
+
+#${javacmd} alloff domhub2.lbl.gov
+
+#
+# hack for gtp stf setup...
+#
+dhclient -off 131.243.36.211
+
+echo "<h2>Done</h2>"
+echo "</body></html>"
