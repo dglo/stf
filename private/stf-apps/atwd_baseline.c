@@ -86,9 +86,9 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
       /* D.  Take one waveform for the channel requested...
        */
       channels[atwd_channel] = buffer;
-      hal_FPGA_TEST_atwd_readout(channels[0], channels[1], channels[2],
-				 channels[3],
-				 cnt, atwd_chip_a_or_b);
+      hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], channels[3],
+			    NULL, NULL, NULL, NULL,
+			    cnt, NULL, 0, atwd_chip_a_or_b);
 
       /* sum it... */
       for (j=0; j<cnt; j++) sum+=buffer[j];

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>pmt_hv_stability</name>
+  <description>PMT HV Stability Test</description>
+  <version major="1" minor="0"/>
+
+  <inputParameter>
+    <description>HV set level (V)</description>
+    <name>hv_set_volt</name>
+    <unsignedInt default="1500" maxValue="2047" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Total run time (seconds)</description>
+    <name>run_time_sec</name>
+    <unsignedInt default="300" maxValue="3600" minValue="5"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Sample interval (milliseconds)</description>
+    <name>sample_time_ms</name>
+    <unsignedInt default="1000" maxValue="5000" minValue="10"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Initial wait time (seconds)</description>
+    <name>init_wait_sec</name>
+    <unsignedInt default="15" maxValue="600" minValue="0"/>
+  </inputParameter>
+  
+  <outputParameter>
+    <description>HV Read Level Mean (mV)</description>
+    <name>hv_read_mean_mvolt</name>
+    <unsignedInt/>
+  </outputParameter>  
+  
+  <outputParameter>
+    <description>HV Read Level Minimum (mV)</description>
+    <name>hv_read_min_mvolt</name>
+    <unsignedInt/>
+  </outputParameter>  
+  
+  <outputParameter>
+    <description>HV Read Level Maximum (mV)</description>
+    <name>hv_read_max_mvolt</name>
+    <unsignedInt/>
+  </outputParameter>  
+  
+  <outputParameter>
+    <description>HV Read Level RMS (mV)</description>
+    <name>hv_read_rms_mvolt</name>
+    <unsignedInt/>
+  </outputParameter>  
+
+</stf:test>
+
+
+
+
+
+
+
+
