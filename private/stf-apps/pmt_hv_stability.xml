@@ -20,7 +20,7 @@
   <inputParameter>
     <description>Sample interval (milliseconds)</description>
     <name>sample_time_ms</name>
-    <unsignedInt default="1000" maxValue="5000" minValue="10"/>
+    <unsignedInt default="1000" maxValue="10000" minValue="10"/>
   </inputParameter>
 
   <inputParameter>

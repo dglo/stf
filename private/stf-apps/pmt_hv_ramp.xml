@@ -3,12 +3,13 @@
 <stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
   <name>pmt_hv_ramp</name>
   <description>PMT HV Ramp Up/Down Test</description>
+
   <version major="1" minor="0"/>
 
   <inputParameter>
     <description>HV min voltage to start ramp (V)</description>
     <name>hv_min_volt</name>
-    <unsignedInt default="10" maxValue="2047" minValue="0"/>
+    <unsignedInt default="800" maxValue="2047" minValue="0"/>
   </inputParameter>
 
   <inputParameter>

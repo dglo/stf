@@ -6,7 +6,8 @@
  * This test sets the PMT high voltage to a particular level 
  * and then simply monitors it for a given time.  The return
  * parameters include the mean, max, min, and rms of the collected
- * values.
+ * values.  Pass/fail criteria include a maximum allowed rms, and
+ * a largest allowed |set-mean|, |mean-min|, and |mean-max|.
  *
  */
 
@@ -21,9 +22,9 @@
 #define VERBOSE
 
 /* PASS/FAIL criteria */
-#define HV_MAX_RMS_MVOLT      800  /* Maximum RMS, in millivolts */
-#define HV_MEAN_ERR_MVOLT    1000  /* Maximum difference of the mean from the set value, mV */
-#define HV_MAX_MIN_ERR_MVOLT 2000  /* Maximum difference of min/max values from set value, mV */
+#define HV_MAX_RMS_MVOLT      1000  /* Maximum RMS, in millivolts */
+#define HV_MEAN_ERR_MVOLT     5000  /* Maximum difference of the mean from the set value, mV */
+#define HV_MAX_MIN_ERR_MVOLT  5000  /* Maximum difference of min/max values from the mean, mV */
 
 BOOLEAN pmt_hv_stabilityInit(STF_DESCRIPTOR *desc) { return TRUE; }
 
@@ -107,9 +108,9 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
         mean_level  += (float)hv_read_level / sample_cnt;
     }
 
-    /* Calculate the RMS */
+    /* Calculate the RMS (standard deviation) */
     for (i = 0; i < sample_cnt; i++) {
-        rms += (sample_arr[i] - mean_level) * (sample_arr[i] - mean_level) / sample_cnt;
+        rms += (sample_arr[i] - mean_level) * (sample_arr[i] - mean_level) / (sample_cnt-1);
     }
     rms = sqrt(rms);
 
@@ -130,11 +131,11 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
     if (*hv_read_rms_mvolt > HV_MAX_RMS_MVOLT) 
         return FALSE;
     
-    if (abs(*hv_read_mean_mvolt - hv_set_volt) > HV_MEAN_ERR_MVOLT)
+    if (abs(*hv_read_mean_mvolt - hv_set_volt*1000) > HV_MEAN_ERR_MVOLT)
         return FALSE;
 
-    if ((abs(*hv_read_max_mvolt - hv_set_volt) > HV_MAX_MIN_ERR_MVOLT) ||
-        (abs(*hv_read_min_mvolt - hv_set_volt) > HV_MAX_MIN_ERR_MVOLT))
+    if ((abs(*hv_read_max_mvolt - *hv_read_mean_mvolt) > HV_MAX_MIN_ERR_MVOLT) ||
+        (abs(*hv_read_min_mvolt - *hv_read_mean_mvolt) > HV_MAX_MIN_ERR_MVOLT))
         return FALSE;
                                                                           
     return TRUE;

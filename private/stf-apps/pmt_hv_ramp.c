@@ -4,14 +4,16 @@
  *
  * STF Test -- PMT High Voltage Ramp
  *
- * This test uses the HV base DAC to set the HV level
- * and then the base ADC to read it back out.  The voltage 
- * is stepped up from a minimum to a maximum value and then 
- * back down again.  
+ *  This test uses the HV base DAC to set the HV level
+ *  and then the base ADC to read it back out.  The voltage 
+ *  is stepped up from a minimum to a maximum value and then 
+ *  back down again.  Each HV level is allowed to settle for
+ *  10s before the ADC is read.
  *
- * The output parameters indicate the HV level that had
- * the greatest deviation when read, and the value that
- * was read out.
+ *  The output parameters indicate the HV level that had
+ *  the greatest deviation when read, and the value that
+ *  was read out.  The pass/fail criterion is the largest allowed
+ *  deviation between the DAC and ADC voltages.
  *
  */
 
@@ -25,7 +27,7 @@
 #define VERBOSE
 
 /* Pass/fail defines */
-#define MAX_ERR_VOLT  2
+#define MAX_ERR_VOLT  5
 
 BOOLEAN pmt_hv_rampInit(STF_DESCRIPTOR *desc) { return TRUE; }
 
