@@ -1,4 +1,4 @@
-C_BIN_NAMES := menu stfserv echomode
+C_BIN_NAMES := menu stfserv
 C_EXCLUDE_NAMES := gendir genqry mk-name stftcp stfclient stf-win32
 USES_PROJECTS := iceboot dom-loader hal
 USES_TOOLS := libxml expat z m
