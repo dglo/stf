@@ -220,19 +220,15 @@ int scanSPE(int atwd_pedestal_dac, unsigned *ret, int use_pulser) {
          }
          else {
             /* printf("scanSPE: ok: dac=%d, rate=%u\r\n", i, rates); */
-            *ret = i + 2;
+            *ret = i + 5;
             break;
          }
       }
       /* printf("scanSPE: dac=%d, rate=%u\r\n", i, rates); */
       }
    }
-   else if (lower_extreme_rate(spe_dac_nominal)==0) {
+   else if (lower_extreme_rate(spe_dac_nominal)>=0) {
      *ret = spe_dac_nominal*0.95-1;
-     retv=1;
-   }
-   else if (upper_extreme_rate(spe_dac_nominal)==0) {
-     *ret = spe_dac_nominal*1.05+1;
      retv=1;
    }
 
