@@ -745,6 +745,9 @@ public class STFParameterLookup {
     hm.put("valid_time_us", p);
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("reset_time_us", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
     hm.put("max_current_err_pct", p);
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedInt"));
@@ -832,6 +835,9 @@ public class STFParameterLookup {
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedInt"));
     hm.put("valid_time_us", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("reset_time_us", p);
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedInt"));
     hm.put("missing_width", p);
@@ -1404,6 +1410,9 @@ public class STFParameterLookup {
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedInt"));
     hm.put("valid_time_us", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("reset_time_us", p);
 
     ret.put("atwd_led_nopmt", hm=new HashMap());
     p = new STFParameter( true );

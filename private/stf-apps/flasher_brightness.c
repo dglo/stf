@@ -93,6 +93,7 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                                 char ** flasher_id,
                                 unsigned int * config_time_us,
                                 unsigned int * valid_time_us,
+                                unsigned int * reset_time_us,
                                 unsigned int * max_current_err_pct,
                                 unsigned int * worst_linearity_brightness,
                                 unsigned int * worst_linearity_led,
@@ -110,6 +111,10 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     /* Default return values */
     *worst_linearity_led = *worst_linearity_brightness = *max_current_err_pct = 0;
     *min_peak_brightness_atwd = *worst_brightness_led = 0;
+    *config_time_us = *reset_time_us = *valid_time_us = 0;
+
+    char dummy_id[9] = "deadbeef";
+    *flasher_id = dummy_id;
 
     /* Pedestal buffers -- only use channel 3 in this test */
     int *atwd_pedestal[4] = {NULL,
@@ -145,7 +150,7 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
 
     /* Initialize the flaherboard and power up */
     /* Record configuration and clock validation times */
-    int err = hal_FB_enable(config_time_us, valid_time_us);
+    int err = hal_FB_enable(config_time_us, valid_time_us, reset_time_us);
     if (err != 0) {
 #ifdef VERBOSE
         printf("Flasher board enable failure (%d)!  Aborting test!\r\n", err);

@@ -55,6 +55,7 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
                            char ** flasher_id,
                            unsigned int * config_time_us,
                            unsigned int * valid_time_us,
+                           unsigned int * reset_time_us,
                            unsigned int * missing_width,
                            unsigned int * failing_led,
                            unsigned int * led_avg_current
@@ -68,6 +69,10 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
 
     /* Default return values */
     *failing_led = *missing_width = 0;
+    *config_time_us = *reset_time_us = *valid_time_us = 0;
+
+    char dummy_id[9] = "deadbeef";
+    *flasher_id = dummy_id;
 
     /* Pedestal buffers -- only use channel 3 in this test */
     int *atwd_pedestal[4] = {NULL,
@@ -99,7 +104,7 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
 
     /* Initialize the flasherboard and power up */
     /* Record configuration and clock validation times */
-    int err = hal_FB_enable(config_time_us, valid_time_us);
+    int err = hal_FB_enable(config_time_us, valid_time_us, reset_time_us);
     if (err != 0) {
 #ifdef VERBOSE
         printf("Flasher board enable failure (%d)!  Aborting test!\r\n", err);

@@ -4,7 +4,7 @@
   <name>flasher_width</name>
   <description>Flasher Board LED Pulse Width Test</description>
 
-  <version major="1" minor="2"/>
+  <version major="1" minor="3"/>
 
   <inputParameter>
     <description>DAC setting for ATWD sampling speed</description>
@@ -81,6 +81,12 @@
   <outputParameter>
     <description>Flasher Board Clock Validation Time (us)</description>
     <name>valid_time_us</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Flasher Board Reset Time (us)</description>
+    <name>reset_time_us</name>
     <unsignedInt/>
   </outputParameter>
 
