@@ -59,6 +59,7 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
 
    /* pretest 3) fe pulser dac gets zero */
    halWriteDAC(DOM_HAL_DAC_INTERNAL_PULSER, 0);
+   hal_FPGA_TEST_set_deadtime(400);
    
    /* pretest 4) turn on fe pulser */
    if (scanSPE(atwd_pedestal_dac, triggerable_spe_dac, use_pulser)) {
@@ -194,7 +195,7 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
    return 
       *atwd_waveform_position > 2 &&
       *atwd_waveform_position < 10 &&
-      *atwd_waveform_width > 2 &&
+      ((atwd_channel==2 && *atwd_waveform_width>=2) || (atwd_channel!=2 && *atwd_waveform_width>2)) &&
       *atwd_waveform_width < 6 &&
       *atwd_waveform_amplitude > *atwd_expected_amplitude/2 &&
       *atwd_waveform_amplitude < *atwd_expected_amplitude*3/2;
