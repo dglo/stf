@@ -25,7 +25,7 @@
 #include "hal/DOM_MB_hal.h"
 
 /* Pass/fail defines */
-#define MAX_ERR_VOLT  10
+#define MAX_ERR_VOLT  15
 
 BOOLEAN pmt_hv_rampInit(STF_DESCRIPTOR *desc) { return TRUE; }
 

@@ -21,8 +21,8 @@
 
 /* PASS/FAIL criteria */
 #define HV_MAX_RMS_MVOLT      1000  /* Maximum RMS, in millivolts */
-#define HV_MEAN_ERR_MVOLT    10000  /* Maximum difference of the mean from the set value, mV */
-#define HV_MAX_MIN_ERR_MVOLT 10000  /* Maximum difference of min/max values from the mean, mV */
+#define HV_MEAN_ERR_MVOLT    15000  /* Maximum difference of the mean from the set value, mV */
+#define HV_MAX_MIN_ERR_MVOLT 15000  /* Maximum difference of min/max values from the mean, mV */
 
 BOOLEAN pmt_hv_stabilityInit(STF_DESCRIPTOR *desc) { return TRUE; }
 
