@@ -39,11 +39,8 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
    unsigned minv, maxv;
    const int cnt = 128;
    short *buffer = (short *) calloc(cnt, sizeof(short));
-   short *channels[4] = { NULL, NULL, NULL, NULL };
    unsigned *values = (unsigned *) calloc(loop_count, sizeof(unsigned));
    unsigned sm = 0, sm2 = 0;
-   const int trigger_mask = (atwd_chip_a_or_b) ?
-      HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
 
    /* A. all five atwd dac settings are programmed...
     */
@@ -76,19 +73,16 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
        */
       if (atwd_trig_forced_or_spe==0) {
 	 /* forced ... */
-	 hal_FPGA_TEST_trigger_forced(trigger_mask);
+	 hal_FPGA_TEST_atwd_trigger_forced(atwd_chip_a_or_b);
       }
       else {
 	 /* discriminator... */
-	 hal_FPGA_TEST_trigger_disc(trigger_mask);
+	 hal_FPGA_TEST_atwd_trigger_disc(atwd_chip_a_or_b);
       }
 
       /* D.  Take one waveform for the channel requested...
        */
-      channels[atwd_channel] = buffer;
-      hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], channels[3],
-			    NULL, NULL, NULL, NULL,
-			    cnt, NULL, 0, atwd_chip_a_or_b);
+      hal_FPGA_TEST_atwd_readout(buffer, cnt, atwd_chip_a_or_b, atwd_channel);
 
       /* sum it... */
       for (j=0; j<cnt; j++) sum+=buffer[j];

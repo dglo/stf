@@ -1,4 +1,22 @@
-.SUFFIXES: .c .o .S .elf .srec .xml .html .tab .bin
+AFLAGS = -mcpu=arm920t
+CFLAGS = -mlittle-endian -mcpu=arm920 -Wall \
+	-nostdinc -I/usr/arm-elf/arm-elf/include \
+	-I/usr/arm-elf/lib/gcc-lib/arm-elf/3.2/include \
+	-I../expat -I../../public -I../../../hal/public \
+	-I ../../../epxa10/build/stf/private
+
+CPP = arm-elf-cpp
+CC = arm-elf-gcc
+AS = arm-elf-as
+AS = arm-elf-ar
+LD = arm-elf-ld -N
+OBJCOPY = arm-elf-objcopy
+
+SYSLIBS = /usr/arm-elf/arm-elf/lib/libc.a \
+	/usr/arm-elf/arm-elf/lib/libm.a \
+	/usr/arm-elf/lib/gcc-lib/arm-elf/3.2/libgcc.a
+
+.SUFFIXES: .c .o .S .elf .srec .xml .html .tab
 
 .c.o:
 	$(CC) -c $(CFLAGS) $<
@@ -6,13 +24,6 @@
 .S.o:
 	$(CPP) $(CPPFLAGS) -o $*.i $<
 	$(AS) $(AFLAGS) -o $*.o $*.i
-
-.elf.bin:
-	$(OBJCOPY) -O binary $*.elf $*.bin
-	$(CPP) $(CPPFLAGS) -DBINFILE=\"$*.bin\" -o $*-raw.i $(RAWS)
-	$(AS) $(AFLAGS) -o $*-raw.o $*-raw.i
-	$(LD) --script=$(RAWX) -o $*-raw.elf $*-raw.o
-	$(OBJCOPY) -O binary $*-raw.elf $*.bin
 
 .elf.srec:
 	$(OBJCOPY) -O binary $*.elf $*.bin
@@ -31,15 +42,14 @@
 # add tests to each here...
 #
 TESTOBJS  = ADC.o memory.o StfEg.o atwd_pedestal.o \
-		atwd_baseline.o pmt_hv_ramp.o pmt_hv_stability.o
+		atwd_baseline.o
 TABS      = ADC.tab memory.tab StfEg.tab atwd_pedestal.tab \
-		atwd_baseline.tab pmt_hv_ramp.tab pmt_hv_stability.tab
+		atwd_baseline.tab
 XMLFILES  = ADC.xml memory.xml StfEg.xml atwd_pedestal.xml \
-		atwd_baseline.xml pmt_hv_ramp.xml pmt_hv_stability.xml
+		atwd_baseline.xml
 HTMLFILES = ADC.html memory.html StfEg.html atwd_pedestal.html \
-		atwd_baseline.html pmt_hv_ramp.html pmt_hv_stability.html
-HTMLDIRS  = ADC memory StfEg atwd_pedestal atwd_baseline pmt_hv_ramp \
-	        pmt_hv_stability
+		atwd_baseline.html
+HTMLDIRS  = ADC memory StfEg atwd_pedestal atwd_baseline
 
 all: stfserv.elf menu.elf
 
@@ -47,29 +57,25 @@ clean:
 	rm -f *.o *.i *.bin *.elf *.srec \
 		run-tests.html gendir stfDirectory.[ch] \
 		$(HTMLFILES) $(TABS) all.tab \
-		memory.h atwd_pedestal.h adwd_baseline.h \
-		StfEg.h \
 		stftcp mk-name
 
 STFOBJS = $(TESTOBJS) ../stf/stf.o stfDirectory.o memtests.o stfUtils.o
-KOBJS = ../lib/crt0.o ../lib/libkernel.a
 
-stfserv.elf: stfserv.o $(STFOBJS)
-	$(LD) --script=$(KERNELX) -o stfserv.elf \
-		$(KOBJS) stfserv.o $(STFOBJS) $(LIBHAL) $(LIBEXPAT) $(SYSLIBS)
+stfserv.elf: $(STFOBJS) stfserv.o
+	$(LD) -r -o stfserv.elf \
+		$(STFOBJS) stfserv.o \
+		../expat/xmlparse/libexpat.a \
+		../../../epxa10/lib/libhal.a \
+		$(SYSLIBS)
 
-menu.elf: menu.o $(STFOBJS)
-	$(LD) --script=$(KERNELX) -o menu.elf \
-		$(KOBJS) menu.o $(STFOBJS) $(LIBHAL) $(SYSLIBS)
+menu.elf: $(STFOBJS) menu.o
+	$(LD) -r -o menu.elf \
+		$(STFOBJS) menu.o \
+		../../../epxa10/lib/libhal.a \
+		$(SYSLIBS)
 
-$(STFSERVBINGZ): stfserv.bin
-	gzip -c stfserv.bin > $(STFSERVBINGZ)
-
-$(MENUBINGZ): menu.bin
-	gzip -c menu.bin > $(MENUBINGZ)
-
-gendir: gendir.c ../public/stf/stf.h
-	gcc -o gendir -I../public \
+gendir: gendir.c ../../public/stf/stf.h
+	gcc -o gendir -I../../public -I../../../hal/public \
 		-I/usr/include/libxml2 gendir.c -Wall -g -lxml2
 
 #genqry: genqry.c
@@ -81,25 +87,9 @@ stfDirectory.c: $(XMLFILES) gendir
 stfDirectory.h: $(XMLFILES) gendir
 	./gendir -skeleton $(XMLFILES)
 
-StfEg.c: stfDirectory.h StfEg.h
-memory.c: stfDirectory.h memory.h
+StfEg.c: stfDirectory.h
+memory.c: stfDirectory.h
 ADC.c: stfDirectory.h
-atwd_pedestal.c: stfDirectory.h atwd_pedestal.h
-atwd_baseline.c: stfDirectory.h atwd_baseline.h
-pmt_hv_ramp.c: stfDirectory.h
-pmt_hv_stability.c: stfDirectory.h
-
-memory.h:
-	ln -s stfDirectory.h memory.h
-
-atwd_pedestal.h:
-	ln -s stfDirectory.h atwd_pedestal.h
-
-atwd_baseline.h:
-	ln -s stfDirectory.h atwd_baseline.h
-
-StfEg.h:
-	ln -s stfDirectory.h StfEg.h
 
 test-cgi: test-cgi.c
 	gcc -Wall -o test-cgi test-cgi.c
@@ -143,4 +133,11 @@ all.tab: $(TABS)
 
 run-tests.html: run-tests.awk all.tab
 	awk -f run-tests.awk all.tab > run-tests.html
+
+
+
+
+
+
+
 

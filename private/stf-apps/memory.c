@@ -59,11 +59,3 @@ BOOLEAN memoryEntry(STF_DESCRIPTOR *d,
    if (needFree) free(buf);
    return (ret==OK) ? TRUE : FALSE;
 }
-
-
-
-
-
-
-
-
