@@ -24,7 +24,7 @@ BOOLEAN fadc_baselineEntry(STF_DESCRIPTOR *d,
                     unsigned *fadc_baseline_rms,
                     unsigned *fadc_baseline_min,
                     unsigned *fadc_baseline_max,
-                    unsigned * fadc_baseline_histogram) {
+                    unsigned *fadc_baseline_histogram) {
 
   unsigned baseline;
   unsigned baseline_max,baseline_min;
@@ -132,7 +132,7 @@ BOOLEAN fadc_baselineEntry(STF_DESCRIPTOR *d,
   /*	2.Baseline mean value is within 80 counts of its nominal value (* See Note).
           Here's how to calculate the nominal value (need floating point or workarounds to get the full precision):
           ((FADC_REFERENCE_DAC*2.5/1023- ATWD_PEDESTAL_DAC*5.0/4095)+1)/2*1023 */
-  tmp_float = (((fadc_reference_dac*2.5)/1023.0 - (atwd_pedestal_dac*5.0)/4095.0)+1.0)/(2046.0);
+  tmp_float = ((((fadc_reference_dac*2.5)/1023.0 - (atwd_pedestal_dac*5.0)/4095.0)+1.0)/2) * 1023.0;
   temp = (int)(floor(tmp_float));
   if(abs((int)baseline_mean-temp)>80) return FALSE;
 
@@ -141,7 +141,7 @@ BOOLEAN fadc_baselineEntry(STF_DESCRIPTOR *d,
   /*    4.Baseline mean value < 250*/
   if(baseline_mean>=250) return FALSE;
   /*    5.Maximum-Minimum < 5*/
-  if(baseline_max-baseline_min>=5) return FALSE;
+  if(baseline_max-baseline_min>=7) return FALSE;
   /*    6.Baseline RMS < 3*/
   if(baseline_rms>=3) return FALSE;
 

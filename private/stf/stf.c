@@ -90,6 +90,7 @@ void stfInitTest(STF_DESCRIPTOR *sd) {
    hal_FPGA_TEST_disable_ping_pong();
    hal_FPGA_TEST_disable_pulser();
    hal_FPGA_TEST_clear_trigger();
+   hal_FPGA_TEST_init_state();
 }
 
 /*------------------------------------------------------------

@@ -16,7 +16,7 @@ BEGIN {
    if (NF==5) {
       print "<tr>";
       print "<td>";
-      if ( $1 == stfserver  && $2 == stfport ) printf "*";
+      if ( NR == pick ) printf "*";
       print "</td>";
       
       print "<td>";
@@ -40,11 +40,10 @@ BEGIN {
       print "</td>";
       
       print "<td>";
-      print "<a href=\"http://deimos.lbl.gov/cgi-bin/stf/pick-dhserver?stfserver=" $1 "&stfport=" $2 "&tabfile=" tabfile "\">Pick</a>"
+      print "<a href=\"/cgi-bin/stf/pick-dhserver?pick=" NR"\">Pick</a>"
       print "</td>";
       
       print "</tr>"
-
 
       nready++;
    }
@@ -56,7 +55,7 @@ END {
 
    if (nready>0) {
       print "<p>";
-      print "<a href=\"http://deimos.lbl.gov/stf/run-tests.html\">";
+      print "<a href=\"/cgi-bin/stf/run-tests\">";
       print "Configure and Run Tests</a>";
    }
    else {
@@ -66,6 +65,7 @@ END {
    print "</body>";
    print "</html>";
 }
+
 
 
 

@@ -131,6 +131,10 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
     printf("DEBUG: Taking pedestal patterns...\r\n");
     #endif
 
+    /* Initialize the atwd_pedestal array */
+    for(j=0; j<cnt; j++)
+        atwd_pedestal[j] = 0;
+
     prescanATWD(trigger_mask);
     
     for (i=0; i<(int)PEDESTAL_TRIG_CNT; i++) {
@@ -222,7 +226,7 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
             
             /* Find the peak (after subtracting out pedestal) */
             maxima[i] = buffer[0] - atwd_pedestal[0];
-            for (j=1; j<cnt; j++) {
+            for (j=0; j<cnt; j++) {
                 maxima[i] = ((buffer[j] - atwd_pedestal[j]) > maxima[i]) ?
                     (buffer[j] - atwd_pedestal[j]) : maxima[i];
             }

@@ -223,7 +223,7 @@ static int dirToXML(char *buf, int max, STF_DESCRIPTOR *stf) {
 	   stf->passed ? BOOLEAN_TRUE : BOOLEAN_FALSE);
    idx += sprintf(buf+idx, "   <testRunnable>%s</testRunnable>\r\n", 
 		  stf->testRunnable ? BOOLEAN_TRUE : BOOLEAN_FALSE);   
-   idx += sprintf(buf+idx, "   <boardID>%s</boardID>\r\n", halGetBoardID()+4);
+   idx += sprintf(buf+idx, "   <boardID>%s</boardID>\r\n", halGetBoardID());
    
    if (stfErrorMessage()!=NULL) {
       idx+= sprintf(buf+idx, "    <errorMessage>%s</errorMessage>\r\n",

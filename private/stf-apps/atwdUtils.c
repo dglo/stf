@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "hal/DOM_MB_hal.h"
 #include "hal/DOM_MB_fpga.h"
@@ -84,7 +85,10 @@ void getSummedWaveform(int loop_count, unsigned trigger_mask, int channel,
    const int cnt = 128;
    short *buffer = (short *) calloc(cnt, sizeof(short));
    short *ch[4] = { NULL, NULL, NULL, NULL };
-   
+
+   /* clear waveform... */
+   memset(waveform, 0, cnt*sizeof(unsigned));
+
    /* set proper channel */
    ch[channel] = buffer;
    
@@ -108,3 +112,26 @@ void getSummedWaveform(int loop_count, unsigned trigger_mask, int channel,
 
    free(buffer);
 }
+
+int speUVoltToDAC(float uv, int pedestal_dac) {
+   return (int) 
+     (( uv*9.6*(2200+249)/249.0 + pedestal_dac*5e6/4096) * 1024/5e6);
+}
+
+int mpeUVoltToDAC(float uv, int pedestal_dac) {
+   return  (int)
+     ((uv*9.6 + (pedestal_dac*5e6/4096.0)) * 1024/5e6);
+}
+
+float speDACToUVolt(int dac, int pedestal_dac) {
+   return 249/(9.6*(2200+249)) * ( (pedestal_dac * 5e6 / 1024) - dac*5e6/1024);
+}
+
+float mpeDACToUVolt(int dac, int pedestal_dac) {
+   return 1/9.6 * (5e6*dac/1024 - pedestal_dac*5e6/4096);
+}
+
+
+
+
+

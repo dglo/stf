@@ -4,7 +4,7 @@
   <name>fadc_fe_forced</name>
   <description>Test the STF FADC waveform with CPU trigger</description>
   <version major="1" minor="0"/>
-    <fpgaDependencies>
+<!--    <fpgaDependencies>
         <COM_FIFO/>
         <DAQ/>
         <PULSERS/>
@@ -14,8 +14,7 @@
         <TRIGGER/>
         <LOCAL_CLOCK/>
         <SUPERNOVA/>
-        <!-- <ALL/> would work too -->
-    </fpgaDependencies>
+    </fpgaDependencies>  -->
   <inputParameter>
     <description>10 bit DAC setting for FADC reference voltage</description>
     <name>fadc_reference_dac</name>

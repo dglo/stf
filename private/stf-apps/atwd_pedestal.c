@@ -36,6 +36,9 @@ BOOLEAN atwd_pedestalEntry(STF_DESCRIPTOR *d,
    int trigger_mask = (atwd_chip_a_or_b) ? 
       HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
 
+   /* clear the pattern... */
+   memset(atwd_pedestal_pattern, 0, sizeof(unsigned)*128);
+
    /* A. all five atwd dac settings are programmed...
     */
    halWriteDAC(ch, atwd_sampling_speed_dac);
@@ -48,9 +51,8 @@ BOOLEAN atwd_pedestalEntry(STF_DESCRIPTOR *d,
     * corresponds to SPE_DISCRIMINATOR_UVOLT and program it...
     */
    if (atwd_trig_forced_or_spe==1) {
-      *atwd_disc_threshold_dac = (unsigned) 
-	 ((spe_descriminator_uvolt * 9.6 * (2200+1000)/1000 + 
-	   atwd_pedestal_dac * 5000000 / 4096)*1024/5000000);
+      *atwd_disc_threshold_dac = speUVoltToDAC(spe_descriminator_uvolt,
+                                               atwd_pedestal_dac);
       halWriteDAC(DOM_HAL_DAC_SINGLE_SPE_THRESH, *atwd_disc_threshold_dac);
    }
 
@@ -85,6 +87,8 @@ BOOLEAN atwd_pedestalEntry(STF_DESCRIPTOR *d,
       /* E. repeat...
        */
    }
+
+   reverseATWDIntWaveform(atwd_pedestal_pattern);
 
    /* F. divide the resulting sum waveform by LOOP_COUNT to get an average
     * waveform.

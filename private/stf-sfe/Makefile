@@ -18,15 +18,13 @@ TESTS = ADC memory StfEg atwd_pedestal atwd_baseline pmt_hv_ramp \
 	fadc_fe_pulser fadc_baseline fadc_fe_forced
 
 TABS      = $(TESTS:%=%.tab)
-HTMLFILES = $(TESTS:%=%.html)
 HTMLDIRS  = $(TESTS)
 
 all: html cgi stftcp chkpt
 
 clean:
 	rm -f *.o *.i *.bin *.elf *.srec \
-		run-tests.html \
-		$(HTMLFILES) $(TABS) all.tab \
+		$(TABS) all.tab \
 		chkpt stftcp mk-name
 
 test-cgi: test-cgi.c
@@ -37,29 +35,34 @@ stf: stf.c
 
 install: html-install
 
-html: run-tests.html $(HTMLFILES) $(TABS) all.tab
+html: $(TABS) all.tab
 
 html-dirs:
-	(cd /var/www/stf/xml; mkdir -p $(HTMLDIRS); chmod g+w $(HTMLDIRS))
-	(cd /var/www/stf/xml; mkdir -p std-tests; chmod g+w std-tests)
-	(cd /var/www/stf/xml; mkdir -p std-results; chmod g+w std-results)
+	(cd /var/www/stf/xml; mkdir -p $(HTMLDIRS))
+	(cd /var/www/stf/xml; mkdir -p std-tests)
+	(cd /var/www/stf/xml; mkdir -p std-results)
 
-html-install: run-tests.html index.html cgi-install html html-dirs
-	cp *.html /var/www/stf
+html-install: index.html cgi-install html html-dirs
+	cp index.html /var/www/stf
+	if [[ ! -d /var/www/stf ]]; then echo "no /var/www/stf"; fi
+	if [[ ! -d /var/www/stf/xml ]]; then mkdir /var/www/stf/xml; fi
 	cp all.tab /var/www/stf/xml
 	cp servers /var/www/stf/xml
 
 CGIS = run-test view-results view-summary validate-param pick-server \
-	plot-array pick-dhserver alloff
+	plot-array pick-dhserver alloff run-tests conf-test run-std-tests
 CGIHELPERS = mk-name chkpt stftcp sumtotable.awk common.sh qrytoxml.awk \
-	restotab.awk tabtosum.awk tabtohtml.awk validate-qry.awk \
-	servertab.awk dhservertab.awk getarray.awk stfmode
+	restotab.awk tabtohtml.awk validate-qry.awk \
+	servertab.awk dhservertab.awk stfmode run-tests.awk \
+	tabtoqry.awk dbtestfixup.awk
 
 cgi: $(CGIS) $(CGIHELPERS)
 
 cgi-install: $(CGIS) $(CGIHELPERS)
 	cp $(CGIS) /usr/lib/cgi-bin/stf
+	if [[ ! -d /var/www/stf/xml ]]; then mkdir /var/www/stf/xml; fi
 	if [[ ! -f /var/www/stf/xml/uniq.txt ]]; then echo "0" > /var/www/stf/xml/uniq.txt; fi
+	if [[ ! -d /usr/lib/cgi-bin/stf/xml/bin ]]; then mkdir -p /usr/lib/cgi-bin/stf/xml/bin; fi
 	cp $(CGIHELPERS) "/usr/lib/cgi-bin/stf/xml/bin"
 
 mk-name: mk-name.c
@@ -73,16 +76,3 @@ chkpt: chkpt.c
 
 all.tab: $(TABS)
 	cat $(TABS) > all.tab
-
-run-tests.html: run-tests.awk all.tab
-	awk -f run-tests.awk all.tab > run-tests.html
-
-
-
-
-
-
-
-
-
-

@@ -9,67 +9,23 @@ source /usr/lib/cgi-bin/stf/xml/bin/common.sh
 # view-results?file=basename
 #
 
-#
 echo "Content-type: text/html"
 echo
 
 #
-# 1) get fname
+# 1) get result id
 #
 fname=`echo ${QUERY_STRING} | qryParam file`
 
 if [[ ${#fname} == 0 ]]; then
-  echo "<h2>Error! file not found</h2>"
+  echo "<h2>Error! Invalid result</h2>"
   exit 0
 fi
 
 #
-# get this record from the summary file...
+# 6) display results...
 #
-sumrec=`grep -e "${fname}\$" /var/www/stf/xml/summary`
-
-#
-# 2) get test name from the summary file...
-#
-testname=`echo ${sumrec} | awk '{print $2}'`
-
-if [[ ${#testname} == 0 ]]; then
-  echo "<h2>Error! no test found</h2>"
-  exit 0
-fi
-
-#
-# make sure testname exists!
-#
-if [[ ! -d ${xmlpath}/${testname} ]]; then 
-    echo "<h2>Error\!  Test ${testname} not found</h2>"
-    exit 0
-fi
-
-fullrxml=${xmlpath}/${testname}/${fname}-results.xml
-
-#
-# make sure file exists...
-#
-if [[ ! -e ${fullrxml} ]]; then
-    echo "<h2>Error! can't find results file</h2>"
-    exit 0
-fi
-
-restt=/usr/lib/cgi-bin/stf/xml/bin/restotab.awk
-tabth=/usr/lib/cgi-bin/stf/xml/bin/tabtohtml.awk
-xmlv ${fullrxml} | awk -f ${restt} | awk -v xml=${fullrxml} -f ${tabth}
-
-
-
-
-
-
-
-
-
-
-
+viewResults ${fname}
 
 
 

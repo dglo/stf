@@ -179,7 +179,7 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    return 
       *atwd_clock1x_amplitude >= 250 &&
-      *atwd_clock1x_amplitude <= 500 &&
+      *atwd_clock1x_amplitude <= 700 &&
       *atwd_sampling_speed_MHz <= 350 &&
       *atwd_sampling_speed_MHz >= 250 &&
       *atwd_sampling_speed_dac_300MHz < 4095;

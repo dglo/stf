@@ -59,9 +59,9 @@ BOOLEAN atwd_baselineEntry(STF_DESCRIPTOR *d,
     * corresponds to SPE_DISCRIMINATOR_UVOLT and program it...
     */
    if (atwd_trig_forced_or_spe==1) {
-      *atwd_disc_threshold_dac = (unsigned) 
-	 ((spe_discriminator_uvolt * 9.6 * (2200+1000)/1000 + 
-	   atwd_pedestal_dac * 5000000 / 4096)*1024/5000000);
+      *atwd_disc_threshold_dac = speUVoltToDAC(spe_discriminator_uvolt,
+                                               atwd_pedestal_dac);
+      
       halWriteDAC(DOM_HAL_DAC_MULTIPLE_SPE_THRESH, *atwd_disc_threshold_dac);
    }
 

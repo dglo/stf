@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>flasher_brightness</name>
+  <description>Flasher Board LED Brightness Test</description>
+
+  <version major="1" minor="0"/>
+
+  <inputParameter>
+    <description>ATWD A or B (0=A,1=B)</description>
+    <name>atwd_chip_a_or_b</name>
+    <unsignedInt default="0" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Flasher Pulse Width</description>
+    <name>flasher_pulse_width</name>
+    <unsignedInt default="127" maxValue="127" minValue="10"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>LED Trigger Count (each LED)</description>
+    <name>led_trig_cnt</name>
+    <unsignedInt default="100" maxValue="5000" minValue="1"/>
+  </inputParameter>
+
+  <outputParameter>
+    <description>Flasher Board ID</description>
+    <name>flasher_id</name>
+    <string/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Max Percent Deviation of Amplitude from Linearity</description>
+    <name>max_current_err_pct</name>
+	<unsignedInt/>
+  </outputParameter>  
+
+  <outputParameter>
+    <description>Brightness Index at Worst Error Point</description>
+    <name>worst_linearity_brightness</name>
+	<unsignedInt/>
+  </outputParameter>  
+
+  <outputParameter>
+    <description>LED with Maximum Linearity Error</description>
+    <name>worst_linearity_led</name>
+	<unsignedInt/>
+  </outputParameter>  
+
+  <outputParameter>
+    <description>Lowest Current Peak at Max Brightness (ATWD Units)</description>
+    <name>min_peak_brightness_atwd</name>
+	<unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>LED with Lowest Brightness Peak</description>
+    <name>worst_brightness_led</name>
+	<unsignedInt/>
+  </outputParameter>  
+    
+  <outputParameter>
+    <description>Averaged LED Current Waveform (+1024 offset)</description>
+    <name>led_avg_current</name>
+	<unsignedIntArray length="128" />
+  </outputParameter>  
+
+</stf:test>
+
+
+
+
+
+
+
+

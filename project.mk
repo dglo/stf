@@ -8,5 +8,3 @@ ifeq ("epxa10","$(strip $(PLATFORM))")
 else
   USES_PROJECTS := $(filter-out dom-loader, $(USES_PROJECTS))
 endif
-
-include ../tools/resources/standard.mk

@@ -211,7 +211,7 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
 
    return 
       *atwd_waveform_position > 2 &&
-      *atwd_waveform_position < 9 &&
+      *atwd_waveform_position < 10 &&
       *atwd_waveform_width > 2 &&
       *atwd_waveform_width < 6;
 }

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -18,6 +19,8 @@
 
 static int fdSer = -1;
 static int verbose = 0;
+
+static void dummy(int i) {}
 
 static int getLine(char *buf, int max) {
   int idx = 0;
@@ -303,5 +306,14 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  signal(SIGALRM, dummy);
+  alarm(10);
+  shutdown(fdSer, 1);
+  while (1) {
+    char b[128];
+    const int nr = read(fdSer, b, sizeof(b));
+    if (nr<=0) break;
+  }
+  close(fdSer);
   return 0;
 }
