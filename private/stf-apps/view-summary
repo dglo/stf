@@ -1,0 +1,31 @@
+#!/bin/sh
+
+#
+# include common routines/variables
+#
+source /usr/lib/cgi-bin/stf/xml/bin/common.sh
+
+#
+# view-summary
+#
+echo "Content-type: text/html"
+echo
+
+echo "<html>"
+echo "  <head>"
+echo "    <title>Summary</title>"
+echo "  </head>"
+echo "  <body>"
+
+#
+# FIXME: check for parameters -- add link to search...
+#
+sort -rn /var/www/stf/xml/summary | \
+    gawk -f /usr/lib/cgi-bin/stf/xml/bin/sumtotable.awk
+
+#
+# FIXME: search code goes here...
+#
+echo "  </body>"
+echo "</html>"
+

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://glacier.lbl.gov/icecube/daq/stf file:/Volumes/IceCube/WorkSpaces/daq/stf/private/stf-apps/stfDefn.xsd">
+  <name>StfEg</name>
+  <description>This defines a test that gives example of how to define, in XML, the different parts of a test.</description>
+  <version major="1" minor="0"/>
+  <inputParameter>
+    <name>Para1</name>
+    <boolean default="false"/>
+  </inputParameter>
+  <inputParameter>
+    <name>Para2</name>
+    <string default="bananas"/>
+  </inputParameter>
+  <inputParameter>
+    <name>Para3</name>
+    <unsignedInt default="0" maxValue="1000" minValue="0"/>
+  </inputParameter>
+  <inputParameter>
+    <name>Para4</name>
+    <unsignedLong default="0" maxValue="281474976710656" minValue="0"/>
+  </inputParameter>
+  <outputParameter>
+    <name>Para5</name>
+    <boolean/>
+  </outputParameter>
+  <outputParameter>
+    <name>Para6</name>
+    <string/>
+  </outputParameter>
+  <outputParameter>
+    <name>Para7</name>
+    <unsignedInt/>
+  </outputParameter>
+  <outputParameter>
+    <name>Para8</name>
+    <unsignedLong/>
+  </outputParameter>
+</stf:test>

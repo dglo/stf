@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>pmt_hv_ramp</name>
+  <description>PMT HV Ramp Up/Down Test</description>
+
+  <version major="1" minor="0"/>
+
+  <inputParameter>
+    <description>HV min voltage to start ramp (V)</description>
+    <name>hv_min_volt</name>
+    <unsignedInt default="800" maxValue="2047" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>HV max voltage to end ramp (V)</description>
+    <name>hv_max_volt</name>
+    <unsignedInt default="2047" maxValue="2047" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Ramp step voltage (V)</description>
+    <name>hv_step_volt</name>
+    <unsignedInt default="50" maxValue="300" minValue="10"/>
+  </inputParameter>
+  
+  <outputParameter>
+    <description>Requested HV level with the greatest error (mV)</description>
+    <name>hv_worst_set_mvolt</name>
+    <unsignedInt/>
+  </outputParameter>  
+
+  <outputParameter>
+    <description>Read HV level with the greatest error (mV)</description>
+    <name>hv_worst_read_mvolt</name>
+    <unsignedInt/>
+  </outputParameter>  
+
+</stf:test>
+
+
+
+
+
+
+
+
