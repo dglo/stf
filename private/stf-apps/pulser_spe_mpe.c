@@ -7,8 +7,6 @@
 #include "hal/DOM_MB_hal.h"
 #include "hal/DOM_MB_fpga.h"
 
-#include "stf-apps/atwdUtils.h"
-
 BOOLEAN pulser_spe_mpeInit(STF_DESCRIPTOR *d) {
    return TRUE;
 }
@@ -37,13 +35,17 @@ BOOLEAN pulser_spe_mpeEntry(STF_DESCRIPTOR *d,
    /* 6. program spe/mpe dac */
    if (mpe_discriminator) {
       halWriteDAC(DOM_HAL_DAC_MULTIPLE_SPE_THRESH,
-		  *discriminator_dac = mpeUVoltToDAC(discriminator_level,
-                                                     pedestal_dac));
+		  *discriminator_dac = 
+		  (int)( (discriminator_level*9.6 +
+			  (pedestal_dac*5000000.0/4096.0)) *
+			 1024/5000000.0));
    }
    else {
       halWriteDAC(DOM_HAL_DAC_SINGLE_SPE_THRESH,
-		  *discriminator_dac = speUVoltToDAC(discriminator_level,
-                                                     pedestal_dac));
+		  *discriminator_dac = 
+		  (int)( (discriminator_level*9.6*((2200+1000.0)/1000.0) +
+			  (pedestal_dac*5000000.0/4096.0))*
+			 1024/5000000.0));
    }
 
    /* 7. the pulser is set to fire at repetition_rate */
