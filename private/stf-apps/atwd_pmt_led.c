@@ -273,6 +273,6 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
      *real_hv_output < 1.05*pmt_hv_high_volt &&
      ((LED_dac==0 && *light_pulse_count>=(loop_count*0.95)) || (LED_dac==1023 && *light_pulse_count<=(loop_count*0.05))) &&
      ((LED_dac==0 && *atwd_waveform_amplitude>880) || (LED_dac==1023 && *atwd_waveform_amplitude<2)) &&
-     ((LED_dac==0 && *LED_waveform_amplitude>60) || (LED_dac==1023 && *LED_waveform_amplitude<2)) &&
+     ((LED_dac==0 && *LED_waveform_amplitude>60) || (LED_dac==1023 && *LED_waveform_amplitude<16)) &&
      (LED_dac==0 && *LED_waveform_position>=38 && *LED_waveform_position<=44);
 }

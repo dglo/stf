@@ -177,7 +177,7 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     halWriteDAC(DOM_HAL_DAC_FL_REF, atwd_flasher_ref);
 
     /* Set the trigger offset delay */
-    hal_FPGA_TEST_set_atwd_LED_delay(atwd_flasher_ref);
+    hal_FPGA_TEST_set_atwd_LED_delay(atwd_led_delay);
 
     /* Select the LED current as the ATWD analog mux input */
     halSelectAnalogMuxInput(DOM_HAL_MUX_FLASHER_LED_CURRENT);

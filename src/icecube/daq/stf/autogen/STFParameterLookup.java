@@ -739,6 +739,12 @@ public class STFParameterLookup {
     hm.put("flasher_id", p);
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("config_time_us", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("valid_time_us", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
     hm.put("max_current_err_pct", p);
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedInt"));
@@ -820,6 +826,12 @@ public class STFParameterLookup {
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("string"));
     hm.put("flasher_id", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("config_time_us", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("valid_time_us", p);
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedInt"));
     hm.put("missing_width", p);
@@ -1381,6 +1393,17 @@ public class STFParameterLookup {
     p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedInt"));
     hm.put("light_pulse_count", p);
+
+    ret.put("flasher_clock", hm=new HashMap());
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("string"));
+    hm.put("flasher_id", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("config_time_us", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("valid_time_us", p);
 
     ret.put("tcal", hm=new HashMap());
     p = new STFParameter( false );

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>flasher_clock</name>
+  <description>Flasher Board LED Clock Stability Test</description>
+
+  <version major="1" minor="0"/>
+
+  <outputParameter>
+    <description>Flasher Board ID</description>
+    <name>flasher_id</name>
+    <string/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Flasher Board CPLD Configuration Time (us)</description>
+    <name>config_time_us</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Flasher Board Clock Validation Time (us)</description>
+    <name>valid_time_us</name>
+    <unsignedInt/>
+  </outputParameter>
+
+</stf:test>
+
+
+
+
+
+
+
+
