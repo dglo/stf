@@ -6,8 +6,8 @@
  <fadc_fe_pulser>
   <version major="1" minor="0"/>
   <parameters>
-   <fadc_reference_dac>700</fadc_reference_dac>
-   <atwd_pedestal_dac>1925</atwd_pedestal_dac>
+   <fadc_reference_dac>800</fadc_reference_dac>
+   <atwd_pedestal_dac>2130</atwd_pedestal_dac>
    <pulser_amplitude_uvolt>40000</pulser_amplitude_uvolt>
    <loop_count>100</loop_count>
   </parameters>

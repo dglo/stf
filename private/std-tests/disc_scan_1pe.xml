@@ -9,7 +9,7 @@
    <disc_spe_or_mpe>0</disc_spe_or_mpe>
    <pulser_amplitude_uvolt>5000</pulser_amplitude_uvolt>
    <pulser_rate_hz>78000</pulser_rate_hz>
-   <atwd_pedestal_dac>1925</atwd_pedestal_dac>
+   <atwd_pedestal_dac>2130</atwd_pedestal_dac>
    <loop_count>1</loop_count>
   </parameters>
  </disc_scan>

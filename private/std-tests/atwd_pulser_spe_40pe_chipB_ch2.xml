@@ -4,13 +4,13 @@
   xsi:schemaLocation="http://glacier.lbl.gov/icecube/daq/stf file:/Volumes/IceCube/WorkSpaces/jas-1/xml/daq/stf.xsd">
 <atwd_pulser_spe>
 <parameters>
-<atwd_analog_ref_dac>2048</atwd_analog_ref_dac>
+<atwd_analog_ref_dac>2250</atwd_analog_ref_dac>
 <atwd_ch0_clamp>0</atwd_ch0_clamp>
 <atwd_channel>2</atwd_channel>
 <atwd_chip_a_or_b>0</atwd_chip_a_or_b>
-<atwd_pedestal_dac>1925</atwd_pedestal_dac>
-<atwd_ramp_bias_dac>600</atwd_ramp_bias_dac>
-<atwd_ramp_top_dac>2097</atwd_ramp_top_dac>
+<atwd_pedestal_dac>2130</atwd_pedestal_dac>
+<atwd_ramp_bias_dac>350</atwd_ramp_bias_dac>
+<atwd_ramp_top_dac>2300</atwd_ramp_top_dac>
 <atwd_sampling_speed_dac>850</atwd_sampling_speed_dac>
 <loop_count>1000</loop_count>
 <n_pedestal_waveforms>50</n_pedestal_waveforms>
