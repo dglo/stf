@@ -106,12 +106,12 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
 
    /* 2) set LED and pmt dac... */
    halEnableLEDPS();
-   halUSleep(1000*100);
+   halUSleep(1000*2000);
    *real_LED_voltage = (halReadADC(DOM_HAL_ADC_SINGLELED_HV)*17/1000);    /*LED voltage = ADC*2*(150+20)/20*(1/1000) */
    pmt_dac = pmt_hv_high_volt*2;
    halEnableBaseHV();
    halWriteActiveBaseDAC(pmt_dac);
-   halUSleep(1000*100);
+   halUSleep(1000*2000);
    *real_hv_output = halReadBaseADC()/2;
 
    /* wait for dacs, et al... */
@@ -195,6 +195,10 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
    
    free(sum_waveform_LED);
    free(sum_waveform_PMT);
+
+   /*turn off PMT and LED*/
+   halPowerDownBase();
+   halDisableLEDPS();
 
    /* 8) reverse waveform */
    reverseATWDIntWaveform(atwd_waveform_pmtLED);

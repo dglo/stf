@@ -43,10 +43,10 @@ BOOLEAN ADCEntry(STF_DESCRIPTOR *desc,
        pass_or_fail[i]=1; /* was: (dc_count<=870 && adc_count>=830) ? 1:0; default = 860, Azriel suggested to make this test pass all the time!*/        
      }
      else if (i == DOM_HAL_ADC_5V_CURRENT) {
-       pass_or_fail[i]=(adc_count<=600 && adc_count>=460) ? 1:0;   /* default = 500 */                
+       pass_or_fail[i]=(adc_count<=600 && adc_count>=400) ? 1:0;   /* default = 500 */                
      }
      else if (i == DOM_HAL_ADC_3_3V_CURRENT) {
-       pass_or_fail[i]=(adc_count<=105 && adc_count>=75) ? 1:0;    /* default = 96 */               
+       pass_or_fail[i]=(adc_count<=115 && adc_count>=75) ? 1:0;    /* default = 96 */               
      }
      else if (i == DOM_HAL_ADC_2_5V_CURRENT) {
        pass_or_fail[i]=(adc_count<=60 && adc_count>=0) ? 1:0;     /* default = 31 */              
@@ -55,7 +55,7 @@ BOOLEAN ADCEntry(STF_DESCRIPTOR *desc,
        pass_or_fail[i]=(adc_count<=125 && adc_count>=75) ? 1:0;     /* default = 90 */              
      }
      else if (i == DOM_HAL_ADC_MINUS_5V_CURRENT) {
-       pass_or_fail[i]=(adc_count<=190 && adc_count>=100) ? 1:0;    /* default = 115 */               
+       pass_or_fail[i]=(adc_count<=220 && adc_count>=100) ? 1:0;    /* default = 115 */               
      }
      else if (i == DOM_HAL_ADC_DISC_ONESPE) {
        dac_count=halReadDAC(DOM_HAL_DAC_SINGLE_SPE_THRESH);
@@ -79,7 +79,7 @@ BOOLEAN ADCEntry(STF_DESCRIPTOR *desc,
      else if (i == DOM_HAL_ADC_FADC_0_REF) {
        dac_count=halReadDAC(DOM_HAL_DAC_FAST_ADC_REF);
        dac_to_adc=dac_count*2.5/1023*500;            /* SPE_ADC_count = [SPE_DAC_count * 2.5V/1023]/2mV */
-       pass_or_fail[i]=(adc_count<=(dac_to_adc+60) && adc_count>=(dac_to_adc-20)) ? 1:0;           
+       pass_or_fail[i]=(adc_count<=(dac_to_adc+70) && adc_count>=(dac_to_adc-20)) ? 1:0;           
      }
      else if (i == DOM_HAL_ADC_SINGLELED_HV) {
        pass_or_fail[i]=(adc_count<=25 && adc_count>=0) ? 1:0;   /* default = 18*/

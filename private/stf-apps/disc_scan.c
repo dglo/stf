@@ -37,6 +37,7 @@ BOOLEAN disc_scanEntry(STF_DESCRIPTOR *d,
    /* set pulser amplitude... */
    halWriteDAC(DOM_HAL_DAC_INTERNAL_PULSER,
                (int) (30.0*pulser_amplitude_uvolt/5000.0));
+   halWriteDAC(DOM_HAL_DAC_PMT_FE_PEDESTAL, atwd_pedestal_dac);
 
    /* pretest 4) turn on fe pulser */
    lookupPulserRate(78e3, &rate, NULL);

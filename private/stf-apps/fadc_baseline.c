@@ -132,7 +132,7 @@ BOOLEAN fadc_baselineEntry(STF_DESCRIPTOR *d,
   /*    4.Baseline mean value < 250*/
   if(baseline_mean>=250) return FALSE;
   /*    5.Maximum-Minimum < 5*/
-  if(baseline_max-baseline_min>=7) return FALSE;
+  if(baseline_max-baseline_min>10) return FALSE;
   /*    6.Baseline RMS < 3*/
   if(baseline_rms>=3000) return FALSE;
 

@@ -40,8 +40,8 @@ BOOLEAN pressureEntry(STF_DESCRIPTOR *d,
   /*  adc_5v_mean_mvolts = &here;*/
 
   halEnableBarometer();
-  halUSleep(100000);
-/* add 100 msec wait */
+  halUSleep(2000000);
+/* add 2 sec wait */
   if(loop_count<2) loop_count=2;
   pressure_sum = 0;
   voltage_sum = 0;
