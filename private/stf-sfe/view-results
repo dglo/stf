@@ -1,0 +1,36 @@
+#!/bin/sh
+
+#
+# include common functions/variables
+#
+source /usr/lib/cgi-bin/stf/xml/bin/common.sh
+
+#
+# view-results?file=basename
+#
+
+echo "Content-type: text/html"
+echo
+
+#
+# 1) get result id
+#
+fname=`echo ${QUERY_STRING} | qryParam file`
+
+if [[ ${#fname} == 0 ]]; then
+  echo "<h2>Error! Invalid result</h2>"
+  exit 0
+fi
+
+#
+# 6) display results...
+#
+viewResults ${fname}
+
+
+
+
+
+
+
+

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>pulser_spe_mpe</name>
+  <description>Pulser SPE/MPE discriminator test</description>
+  <version major="1" minor="0"/>
+  <inputParameter>
+    <name>pulse_height</name>
+    <unsignedInt default="1000"/>
+  </inputParameter>
+
+  <inputParameter>
+    <name>discriminator_level</name>
+    <unsignedInt default="500"/>
+  </inputParameter>
+
+  <inputParameter>
+    <name>mpe_discriminator</name>
+    <boolean default="False"/>
+  </inputParameter>
+
+  <inputParameter>
+    <name>pedestal_dac</name>
+    <unsignedInt default="1925" minValue="0" maxValue="4095"/>
+  </inputParameter>
+
+  <inputParameter>
+    <name>repetition_rate</name>
+    <unsignedInt default="1200"/>
+  </inputParameter>
+
+  <outputParameter>
+    <name>measured_rate</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <name>actual_rate</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <name>discriminator_dac</name>
+    <unsignedInt/>
+  </outputParameter>
+
+</stf:test>
+
+
+
+
+

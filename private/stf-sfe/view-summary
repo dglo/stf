@@ -1,0 +1,43 @@
+#!/bin/sh
+
+#
+# include common routines/variables
+#
+source /usr/lib/cgi-bin/stf/xml/bin/common.sh
+
+#
+# view-summary
+#
+echo "Content-type: text/html"
+echo
+
+echo "<html>"
+echo "  <head>"
+echo "    <title>Summary</title>"
+echo "  </head>"
+echo "  <body>"
+
+#
+# FIXME: check for parameters -- add link to search...
+#
+qry="select \
+       r.date_tested, tt.name, r.prod_id, r.passed, r.stf_result_id \
+     from \
+       STFResult r, STFTest t, STFTestType tt \
+     where \
+       r.stf_test_id=t.stf_test_id and \
+       t.stf_testtype_id=tt.stf_testtype_id \
+     order by \
+       r.date_tested \
+     desc
+     limit 200;"
+
+${mysqlcmd} "${qry}" | \
+    gawk -F "\t" -f /usr/lib/cgi-bin/stf/xml/bin/sumtotable.awk
+
+#
+# FIXME: search code goes here...
+#
+echo "  </body>"
+echo "</html>"
+

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>atwd_pedestal</name>
+  <description>ATWD Pedestal</description>
+  <version major="1" minor="0"/>
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD sampling speed</description>
+    <name>atwd_sampling_speed_dac</name>
+    <unsignedInt default="850" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Top Voltage</description>
+    <name>atwd_ramp_top_dac</name>
+    <unsignedInt default="2097" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Bias current </description>
+    <name>atwd_ramp_bias_dac</name>
+    <unsignedInt default="3000" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Analog Reference Voltage</description>
+    <name>atwd_analog_ref_dac</name>
+    <unsignedInt default="2048" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Pedestal Voltage</description>
+    <name>atwd_pedestal_dac</name>
+    <unsignedInt default="1925" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects one of two chips (A or B) on the board:0=ATWD-A and 1=ATWD-B</description>
+    <name>atwd_chip_a_or_b</name>
+    <unsignedInt default="1" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects one of 3 PMT analog signal channels with different gains</description>
+    <name>atwd_channel</name>
+    <unsignedInt default="0" maxValue="2" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects ATWD launch method: 0=forced trigger, 1=SPE discriminator trigger</description>
+    <name>atwd_trig_forced_or_spe</name>
+    <unsignedInt default="0" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>SPE discriminator in microvolts (at the PMT input). 5000 = 5mV ~ 1 SPE</description>
+    <name>spe_descriminator_uvolt</name>
+    <unsignedInt default="0" maxValue="5000" minValue="-5000"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Number of waveforms to take and average over before analysis</description>
+    <name>loop_count</name>
+    <unsignedInt default="1000" maxValue="1000000" minValue="1"/>
+  </inputParameter>
+
+  <outputParameter>
+    <description>Is the peak-to-peak amplitude of the averaged pedestal waveform</description>
+    <name>atwd_pedestal_amplitude</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Average pedestal pattern waveform in ATWD counts units.</description>
+    <name>atwd_pedestal_pattern</name>
+    <unsignedIntArray length="128" />
+  </outputParameter>
+
+  <outputParameter>
+    <description></description>
+    <name>atwd_spe_disc_threshold_dac</name>
+    <unsignedInt/>
+  </outputParameter>
+
+
+</stf:test>
+
+
+
+
+
+
+
+
