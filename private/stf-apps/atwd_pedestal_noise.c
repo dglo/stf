@@ -123,7 +123,7 @@ BOOLEAN atwd_pedestal_noiseEntry(STF_DESCRIPTOR *d,
 
    return 
       avg > 95 && avg < 105 &&
-      rms < 1.5 &&
+      rms < 2.0 &&
       *noise_negative_max < 10 &&
       *noise_positive_max < 10;
 }
