@@ -45,8 +45,8 @@ BEGIN {
     }
     
     print "<tr>";
-    print "<td>" $2 "</td><td>" type "</td><td>" $3 "</td";
-    print  "</tr";
+    print "<td>" $2 "</td><td>" type "</td><td>" $3 "</td>";
+    print  "</tr>";
 }
 
 END {
