@@ -22,7 +22,7 @@ Build the library and documentation for the "@PROJECT@" project.
 
         <property name="include_dir" value="./include" />
         <property name="source_dir" value="./source" />
-        <property name="platform" value="MacOSX-${os.arch}" />
+        <property name="platform" value="${os.name}-${os.arch}" />
         <property name="platform_include_dir" value="${include_dir}/${platform}" />
         <property name="platform_source_dir" value="${source_dir}/${platform}" />
         <property name="platform_build_dir" value="${base_build_dir}/${platform}/${project}" />
@@ -302,6 +302,7 @@ Build the library and documentation for the "@PROJECT@" project.
         <exec executable="gmake">
            <arg value="-fstandard.mk"/>
            <arg value="PLATFORM=${platform}"/>
+           <arg value="PROJECT=${project}"/>
            <arg value="clean"/>
         </exec>
     </target>
