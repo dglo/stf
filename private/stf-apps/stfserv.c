@@ -33,6 +33,9 @@
  * 6  ERR msg\r\n
  *    (goto 1)
  *
+ * 7  DOMID domid\r\n
+ *    (goto 1)
+ *
  *
  * FIXME: loop count input and output!!!!
  *   factor out 
@@ -335,6 +338,9 @@ int main() {
 	    else if (strcmp(line, "OK")==0) {
 	       state = 1;
 	    }
+	    else if (strcmp(line, "DOMID")==0) {
+               state = 7;
+            }
 	    else {
 	       sprintf(msg, "invalid state 1 command!: '%s'", line);
 	       state = 6;
@@ -467,6 +473,13 @@ int main() {
 	 strcpy(msg, "");
 	 state = 1;
       }
+      else if (state==7) {
+	 char msg[128];
+	 snprintf(msg, sizeof(msg), "DOMID %s\r\n",
+		 halGetBoardID());
+         write(1, msg, strlen(msg));
+    	 state = 1;
+      } 
    }
 
    return 0;

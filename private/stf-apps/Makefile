@@ -23,8 +23,7 @@
 TESTOBJS  = ADC.o memory.o StfEg.o atwd_pedestal.o atwd_baseline.o \
 	pmt_hv_ramp.o pmt_hv_stability.o pressure.o pulser_spe_mpe.o \
 	atwd_pedestal_sweep_forced.o atwd_pulser_spe.o atwd_pedestal_spe.o \
-	atwd_clock1x_forced.o pmt_pv_ratio.o flasher_brightness.o \
-	flasher_width.o \
+	atwd_clock1x_forced.o flasher_brightness.o flasher_width.o \
 	fadc_fe_pulser.o fadc_baseline.o fadc_fe_forced.o disc_scan.o \
 	loopback_lc.o atwd_pedestal_noise.o temperature.o atwd_pmt_spe.o \
 	fadc_fe_external.o atwd_pmt_led.o
@@ -46,7 +45,7 @@ HDRFILES  = $(TESTOBJS:.o=.h)
 #
 GENJAVA=../../../stf/src/icecube/daq/stf/autogen/STFParameterLookup.java
 
-all: stfserv.elf menu.elf echomode.elf $(GENJAVA)
+all: stfserv.elf menu.elf echomode.elf $(GENJAVA) wiggle.elf
 
 java: $(GENJAVA)
 
@@ -72,6 +71,10 @@ menu.elf: menu.o $(EXOBJS) $(STFOBJS) $(LIBHAL)
 echomode.elf: echomode.o $(LIBHAL)
 	$(LD) --script=$(KERNELX) -o echomode.elf \
 		$(KOBJS) echomode.o $(LIBHAL) $(SYSLIBS)
+
+wiggle.elf: wiggle.o $(LIBHAL)
+	$(LD) --script=$(KERNELX) -o wiggle.elf \
+		$(KOBJS) wiggle.o $(LIBHAL) $(SYSLIBS)
 
 ../bin/%.bin.gz: %.bin; gzip -c $< > $@
 
@@ -102,3 +105,16 @@ $(GENJAVA): $(XMLFILES) tcal.xml genspl.awk
 
 templates.tar.gz: $(XMLTEMPLATES)
 	tar cf - $(XMLTEMPLATES) | gzip -c > templates.tar.gz
+
+
+
+
+
+
+
+
+
+
+
+
+

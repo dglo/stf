@@ -70,7 +70,7 @@ BOOLEAN disc_scanEntry(STF_DESCRIPTOR *d,
          halUSleep(20*1000);
 
          /* readout the rate... */
-         disc_sum_waveform[n] = hal_FPGA_TEST_get_spe_rate();
+         disc_sum_waveform[n] += hal_FPGA_TEST_get_spe_rate();
       }
    }
 

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>atwd_baseline_shift</name>
+  <description>ATWD Baseline Shift</description>
+  <version major="1" minor="0"/>
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD sampling speed</description>
+    <name>atwd_sampling_speed_dac</name>
+    <unsignedInt default="850" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Top Voltage</description>
+    <name>atwd_ramp_top_dac</name>
+    <unsignedInt default="2300" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Bias current </description>
+    <name>atwd_ramp_bias_dac</name>
+    <unsignedInt default="350" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>ATWD Analog Reference Voltage Input</description>
+    <name>atwd_analog_ref_dac</name>
+    <unsignedInt default="2250" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Pedestal Voltage</description>
+    <name>atwd_pedestal_dac</name>
+    <unsignedInt default="2130" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects one of two chips (A or B) on the board:0=ATWD-A and 1=ATWD-B </description>
+    <name>atwd_chip_a_or_b</name>
+    <unsignedInt default="1" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects one of 3 PMT analog signal channels with different gains</description>
+    <name>atwd_channel</name>
+    <unsignedInt default="0" maxValue="2" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>SPE discriminator in microvolts (at the PMT input). 5000 = 5mV ~ 1 SPE</description>
+    <name>spe_discriminator_uvolt</name>
+    <unsignedInt default="0" maxValue="5000" minValue="-5000"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Number of waveforms for baseline histogram and to compute mean, rms, etc</description>
+    <name>loop_count</name>
+    <unsignedInt default="10" maxValue="100" minValue="2"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Number of microseconds to skip between samples</description>
+    <name>skip</name>
+    <unsignedInt default="300" maxValue="1000000" minValue="1"/>
+  </inputParameter>
+
+  <outputParameter>
+    <description>Mean of the baseline values</description>
+    <name>atwd_baseline_mean</name>
+    <unsignedIntArray length="100"/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Standard deviation of the baseline values</description>
+    <name>atwd_baseline_rms</name>
+    <unsignedIntArray length="100"/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Minimum of the baseline values</description>
+    <name>atwd_baseline_min</name>
+    <unsignedIntArray length="100"/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Maximum of the baseline values</description>
+    <name>atwd_baseline_max</name>
+    <unsignedIntArray length="100"/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>slope of baseline</description>
+    <name>atwd_baseline_slope</name>
+    <unsignedIntArray length="100"/>
+  </outputParameter>
+
+</stf:test>
+
+
+
+
+
+
+
+
+
+
