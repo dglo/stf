@@ -6,7 +6,7 @@
  *   capturing their current waveforms with ATWD
  *   channel 3.
  *
- * - Measures pulse widths at every setting and 
+ * - Measures pulse widths at almost every setting and 
  *   makes sure every width within a given range,
  *   about 1ns/bin, is covered.
  */
@@ -20,19 +20,6 @@
 #include "hal/DOM_MB_hal.h"
 #include "stf-apps/atwdUtils.h"
 
-/* ATWD DAC settings */
-#define ATWD_SAMPLING_SPEED_DAC 4095 /* Non-standard! */
-#define ATWD_RAMP_TOP_DAC       2097
-#define ATWD_RAMP_BIAS_DAC      2800 /* Non-standard! */
-#define ATWD_ANALOG_REF_DAC     2048
-#define ATWD_PEDESTAL_DAC       1925
-
-/* Offset for current measurement */
-#define ATWD_FLASHER_REF         450
-
-/* ATWD-LED trigger offset delay */
-#define ATWD_LED_DELAY            7
-
 /* Number of pedestals to average */
 #define PEDESTAL_TRIG_CNT        100
 
@@ -40,12 +27,14 @@
 #define N_LEDS                    12
 
 /* Maximum pulse width setting */
-#define FB_MAX_WIDTH             127
+/* Actual maximum is 255, but we max out the ATWD window before that */
+/* because we use such a high sampling speed */
+#define FB_MAX_WIDTH             220
 
 /* Pass/fail defines */
-/* Width in ATWD units here is approximately same in ns */
+/* Width in ATWD samples here is *approximately* same in ns */
 #define FB_MIN_ATWD_WIDTH          7
-#define FB_MAX_ATWD_WIDTH         50
+#define FB_MAX_ATWD_WIDTH         95
 
 /* Rounding convert to int */
 #define round(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
@@ -53,6 +42,13 @@
 BOOLEAN flasher_widthInit(STF_DESCRIPTOR *desc) { return TRUE; }
 
 BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
+                           unsigned int atwd_sampling_speed_dac,
+                           unsigned int atwd_ramp_top_dac,
+                           unsigned int atwd_ramp_bias_dac,
+                           unsigned int atwd_analog_ref_dac,
+                           unsigned int atwd_pedestal_dac,
+                           unsigned int atwd_flasher_ref,
+                           unsigned int atwd_led_delay,
                            unsigned int atwd_chip_a_or_b,
                            unsigned int flasher_brightness,
                            unsigned int led_trig_cnt,
@@ -102,6 +98,11 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
     /* Initialize the flasherboard and power up */
     hal_FB_enable();
 
+    /* Read the flasher board firmware version */
+    #ifdef VERBOSE
+    printf("Flasher board FW version = %d\r\n", hal_FB_get_fw_version());
+    #endif
+
     /* Read the flasherboard ID */
     /* Not malloc'ed by STF */
     static char id[20];
@@ -116,15 +117,15 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
     /* Record an average pedestal for this ATWD */
 
     /* Set up the ATWD DAC values */
-    halWriteDAC(ch, ATWD_SAMPLING_SPEED_DAC);
-    halWriteDAC(ch+1, ATWD_RAMP_TOP_DAC);
-    halWriteDAC(ch+2, ATWD_RAMP_BIAS_DAC);
-    halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF, ATWD_ANALOG_REF_DAC);
-    halWriteDAC(DOM_HAL_DAC_PMT_FE_PEDESTAL, ATWD_PEDESTAL_DAC);   
-    halWriteDAC(DOM_HAL_DAC_FL_REF, ATWD_FLASHER_REF);
+    halWriteDAC(ch, atwd_sampling_speed_dac);
+    halWriteDAC(ch+1, atwd_ramp_top_dac);
+    halWriteDAC(ch+2, atwd_ramp_bias_dac);
+    halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF, atwd_analog_ref_dac);
+    halWriteDAC(DOM_HAL_DAC_PMT_FE_PEDESTAL, atwd_pedestal_dac);   
+    halWriteDAC(DOM_HAL_DAC_FL_REF, atwd_flasher_ref);
 
     /* Set the trigger offset delay */
-    hal_FPGA_TEST_set_atwd_LED_delay(ATWD_LED_DELAY);
+    hal_FPGA_TEST_set_atwd_LED_delay(atwd_led_delay);
 
     /* Select the LED current as the ATWD analog mux input */
     halSelectAnalogMuxInput(DOM_HAL_MUX_FLASHER_LED_CURRENT);
@@ -144,6 +145,9 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
 
         /* CPU-trigger the ATWD */
         hal_FPGA_TEST_trigger_forced(trigger_mask);
+
+        /* Wait for done */
+        while (!hal_FPGA_TEST_readout_done(trigger_mask));
         
         /* Read out one waveform for channel 3 */        
         hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], channels[3], 
@@ -211,7 +215,10 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
                 
                 /* LED-trigger the ATWD */
                 hal_FPGA_TEST_trigger_LED(trigger_mask);
-                
+
+                /* Wait for done */
+                while (!hal_FPGA_TEST_readout_done(trigger_mask));                
+
                 /* Read out one waveform of channel 3 */
                 hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], channels[3], 
                                       channels[0], channels[1], channels[2], channels[3],
