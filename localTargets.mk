@@ -12,4 +12,8 @@ $(BUILD_DIR)/$(PVT_DIR_NAME)/%Dictionary.c : %.xsd
 	@test -d $(@D) || mkdir -p $(@D)
 	$(XSLT) -in $< -out $@ -xsl $(<D)/xsd2Dictionary.xsl
 
+$(COMMON_RSRC_DIR)/%Default.xml : private/stf-apps/%.xml
+	@test -d $(@D) || mkdir -p $(@D)
+	$(XSLT) -in $< -out $(@D)/$(*F)Default.xml -xsl $(<D)/stfDefn2Default.xsl
+
 -include ../dom-loader/$(PLATFORM_PUB_ROOT)/loader/loaderTargets.mk
