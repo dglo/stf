@@ -61,7 +61,7 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
     halWriteActiveBaseDAC(hv_set_volt * 2);
 
     /* Read the HV base ID */
-    *hv_id = (char *) halHVSerial();
+    *hv_id = halHVSerial();
     #ifdef VERBOSE
     printf("DEBUG: HV ID is %s\r\n", *hv_id);
     #endif
