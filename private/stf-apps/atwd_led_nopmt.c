@@ -181,5 +181,5 @@ BOOLEAN atwd_led_nopmtEntry(STF_DESCRIPTOR *d,
 
    free(buffer1);
    return       
-     ((LED_dac==0 && *real_LED_voltage>=16 && *real_LED_voltage<=17) || (LED_dac==1023 && *real_LED_voltage>=0 && *real_LED_voltage<=3));
+     ((LED_dac==0 && *real_LED_voltage>=16 && *real_LED_voltage<=20) || (LED_dac==1023 && *real_LED_voltage>=0 && *real_LED_voltage<=3));
 }
