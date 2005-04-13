@@ -762,6 +762,12 @@ public class STFParameterLookup {
     p.setType(STFParameterType.getType("unsignedInt"));
     hm.put("worst_brightness_led", p);
     p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("min_slope_x_100", p);
+    p = new STFParameter( false );
+    p.setType(STFParameterType.getType("unsignedInt"));
+    hm.put("min_slope_led", p);
+    p = new STFParameter( false );
     p.setType(STFParameterType.getType("unsignedIntArray"));
     hm.put("led_avg_current", p);
 
