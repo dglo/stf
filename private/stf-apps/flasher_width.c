@@ -71,7 +71,7 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
     *failing_led = *missing_width = 0;
     *config_time_us = *reset_time_us = *valid_time_us = 0;
 
-    char dummy_id[9] = "deadbeef";
+    static char dummy_id[9] = "deadbeef";
     *flasher_id = dummy_id;
 
     /* Pedestal buffers -- only use channel 3 in this test */

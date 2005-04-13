@@ -32,7 +32,7 @@ BOOLEAN flasher_clockEntry(STF_DESCRIPTOR *desc,
                            unsigned int * reset_time_us
                            ) {
 
-    char dummy_id[9] = "deadbeef";
+    static char dummy_id[9] = "deadbeef";
     *flasher_id = dummy_id;
 
     /* Make sure PMT is off */
