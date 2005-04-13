@@ -41,6 +41,11 @@
 /* About 85% of nominal value of 440 */
 #define MIN_PEAK_MAX_BRIGHT      375 
 
+/* Minimum slope of linear brightness relationship */
+/* Very loose condition -- nominal slope is 3.0 */
+/* Used to catch stuck-at failures */
+#define MIN_SLOPE                1.0
+
 /* Rounding convert to int */
 #define round(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
 
@@ -99,6 +104,8 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                                 unsigned int * worst_linearity_led,
                                 unsigned int * min_peak_brightness_atwd,
                                 unsigned int * worst_brightness_led,
+                                unsigned int * min_slope_x_100,
+                                unsigned int * min_slope_led,
                                 unsigned int * led_avg_current
                              ) {
 
@@ -112,8 +119,9 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     *worst_linearity_led = *worst_linearity_brightness = *max_current_err_pct = 0;
     *min_peak_brightness_atwd = *worst_brightness_led = 0;
     *config_time_us = *reset_time_us = *valid_time_us = 0;
+    *min_slope_x_100 = *min_slope_led = 0;
 
-    char dummy_id[9] = "deadbeef";
+    static char dummy_id[9] = "deadbeef";
     *flasher_id = dummy_id;
 
     /* Pedestal buffers -- only use channel 3 in this test */
@@ -373,21 +381,25 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                        led+1,*max_current_err_pct,*worst_linearity_brightness);
                 #endif
             }
-        }
+        }      
 
         /* Record minimum brightness at peak setting */
-        if (*min_peak_brightness_atwd == 0) {
+        if ((led == 0) || ((peaks[N_BRIGHTS-1] < *min_peak_brightness_atwd))) {
             *min_peak_brightness_atwd = peaks[N_BRIGHTS-1];
+            *worst_brightness_led = led+1;
+            #ifdef VERBOSE
+            printf("New minimum peak brightness, LED %d: %d\n",
+                   led+1, *min_peak_brightness_atwd);
+            #endif
         }
-        else {
-            if (peaks[N_BRIGHTS-1] < *min_peak_brightness_atwd) {
-                *min_peak_brightness_atwd = peaks[N_BRIGHTS-1];
-                *worst_brightness_led = led+1;
-                #ifdef VERBOSE
-                printf("New minimum peak brightness, LED %d: %d\n",
-                       led+1, *min_peak_brightness_atwd);
-                #endif
-            }
+
+        /* Keep track of minimum slope */
+        if ((led == 0) || ((int)(slope*100) < *min_slope_x_100)) {
+            *min_slope_x_100 = (int)(slope*100);
+            *min_slope_led   = led+1;
+            #ifdef VERBOSE
+            printf("New minimum slope, LED %d: slope of %g\n", led+1, slope);
+            #endif
         }
 
     } /* End LED loop */        
@@ -420,9 +432,8 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
 
     passed  = (*max_current_err_pct > MAX_ERR_PCT) ? FALSE : TRUE;
     passed &= (*min_peak_brightness_atwd > MIN_PEAK_MAX_BRIGHT);
-
-    /* TO DO: Add minimum slope/intercept check? */
-
+    passed &= (*min_slope_x_100 > (int)(MIN_SLOPE*100));
+    
     /* Free allocated structures */
     free(atwd_pedestal[3]);
     free(channels[3]);
