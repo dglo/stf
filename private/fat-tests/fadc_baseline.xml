@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:setup xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://glacier.lbl.gov/icecube/daq/stf file:/Volumes/IceCube/WorkSpaces/jas-1/xml/daq/stf.xsd">
+
+ <fadc_baseline>
+  <version major="1" minor="0"/>
+  <parameters>
+   <fadc_reference_dac>800</fadc_reference_dac>
+   <atwd_pedestal_dac>2130</atwd_pedestal_dac>
+   <loop_count>100</loop_count>
+  </parameters>
+ </fadc_baseline>
+</stf:setup>
