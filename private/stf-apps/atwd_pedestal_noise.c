@@ -16,6 +16,7 @@ BOOLEAN atwd_pedestal_noiseInit(STF_DESCRIPTOR *d) {
 }
 
 BOOLEAN atwd_pedestal_noiseEntry(STF_DESCRIPTOR *d,
+                    unsigned integrated,
                     unsigned atwd_sampling_speed_dac,
                     unsigned atwd_ramp_top_dac,
                     unsigned atwd_ramp_bias_dac,
@@ -121,9 +122,11 @@ BOOLEAN atwd_pedestal_noiseEntry(STF_DESCRIPTOR *d,
       *noise_rms = (unsigned) (rms*1000);
    }
 
-   return 
-      avg > 95 && avg < 105 &&
-      rms < 2.0 &&
-      *noise_negative_max < 10 &&
-      *noise_positive_max < 10;
+   {  const int maxlimit = (integrated) ? 20 : 10;
+      
+      return 
+         avg > 95 && avg < 105 &&
+         rms < 2.0 &&
+         *noise_negative_max < maxlimit && *noise_positive_max < maxlimit;
+   }
 }
