@@ -5,6 +5,7 @@
 
  <atwd_pedestal_noise>
   <parameters>
+   <integrated>1</integrated>
    <atwd_sampling_speed_dac>850</atwd_sampling_speed_dac>
    <atwd_ramp_top_dac>2300</atwd_ramp_top_dac>
    <atwd_ramp_bias_dac>350</atwd_ramp_bias_dac>
