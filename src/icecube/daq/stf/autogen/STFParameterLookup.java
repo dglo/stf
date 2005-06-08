@@ -1070,6 +1070,12 @@ public class STFParameterLookup {
     ret.put("atwd_pedestal_noise", hm=new HashMap());
     p = new STFParameter( true );
     p.setType(STFParameterType.getType("unsignedInt"));
+    p.setDefaultValue("0");
+    p.setMinValue("0");
+    p.setMaxValue("1");
+    hm.put("integrated", p);
+    p = new STFParameter( true );
+    p.setType(STFParameterType.getType("unsignedInt"));
     p.setDefaultValue("850");
     p.setMinValue("0");
     p.setMaxValue("4095");
