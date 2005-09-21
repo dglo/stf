@@ -1,0 +1,16 @@
+<project>
+	<name>stf</name>
+	<packages default="icecube.daq.stf">
+		icecube.daq.stf
+	</packages>
+	<uses>
+		<libs>domcom.jar</libs>
+		<tools>log4j.jar</tools>
+	</uses>
+	<test>
+		<uses>
+			<libs/>
+			<tools>junit.jar</tools>
+		</uses>
+	</test>
+</project>

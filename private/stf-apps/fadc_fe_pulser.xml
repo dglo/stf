@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://glacier.lbl.gov/icecube/daq/stf file:/Volumes/IceCube/WorkSpaces/daq/stf/private/stf-apps/stfDefn.xsd">
+  <name>fadc_fe_pulser</name>
+  <description>Test the STF FADC FE PULSER</description>
+  <version major="1" minor="0"/>
+    <fpgaDependencies>
+        <COM_FIFO/>
+        <DAQ/>
+        <PULSERS/>
+        <DISCRIMINATOR_RATE/>
+        <LOCAL_COINC/>
+        <FLASHER_BOARD/>
+        <TRIGGER/>
+        <LOCAL_CLOCK/>
+        <SUPERNOVA/>
+        <!-- <ALL/> would work too -->
+    </fpgaDependencies>
+  <inputParameter>
+    <description>10 bit DAC setting for FADC reference voltage</description>
+    <name>fadc_reference_dac</name>
+    <unsignedInt default="700" minValue="0" maxValue="1023"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>12Bit DAC setting for atwd pedestal voltage </description>
+    <name>atwd_pedestal_dac</name>
+    <unsignedInt  default="1925" minValue="0" maxValue="4095"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>pulser amplitude in uV (at PMT input) 5000=5mV ~ 1 SPE </description>
+    <name>pulser_amplitude_uvolt</name>
+    <unsignedLong default="5000" minValue="0" maxValue="5000000"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Number of waveforms to take and average over before analysis.</description>
+    <name>loop_count</name>
+    <unsignedLong default="" minValue="0" maxValue="1000000"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Fill the auput array with waveform.True=do-not-fill, False=fill-array.</description>
+    <name>fill_output_arrays</name>
+    <boolean default="True"/>
+  </inputParameter>
+
+  <outputParameter>
+    <description>First value of the SPE DAC that was above noise(of 10bit)if no trigger point then use last tried point</description>
+    <name>triggerable_spe_dac</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Mean of the raw FADC baseline values (before baseline subtraction)</description>
+    <name>fadc_baseline_mean</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Amplitude of the positive going pulse (in FADC count units.)</description>
+    <name>fadc_fe_pulser_amplitude</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Width of the positive going pulse ( in FADC samples = 2x clock counts).</description>
+    <name>fadc_fe_pulser_width</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Position of the triggered positive going pulse (in FADC samples - 2x clock counts).</description>
+    <name>fadc_fe_pulser_position</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Average waveform FADC baseline values in ATWD counts units.</description>
+    <name>fadc_fe_pulser_waveform</name>
+    <unsignedIntArray length="512"/>
+  </outputParameter>
+
+</stf:test>

@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>atwd_pmt_led</name>
+  <description>ATWD PMT with LED Test</description>
+  <version major="1" minor="0"/>
+
+  <fpgaDependencies>
+	<DAQ/>
+  </fpgaDependencies>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD sampling speed</description>
+    <name>atwd_sampling_speed_dac</name>
+    <unsignedInt default="850" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Top Voltage</description>
+    <name>atwd_ramp_top_dac</name>
+    <unsignedInt default="2097" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Bias current </description>
+    <name>atwd_ramp_bias_dac</name>
+    <unsignedInt default="3000" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>ATWD Analog Reference Voltage Input</description>
+    <name>atwd_analog_ref_dac</name>
+    <unsignedInt default="2048" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Pedestal Voltage</description>
+    <name>atwd_pedestal_dac</name>
+    <unsignedInt default="1925" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting for ATWD 1st stage output clamping</description>
+    <name>atwd_ch0_clamp</name>
+    <unsignedInt default="0" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects one of two chips (A or B) on the board:0=ATWD-A and 1=ATWD-B </description>
+    <name>atwd_chip_a_or_b</name>
+    <unsignedInt default="0" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects one of 3 PMT analog signal channels with different gains</description>
+    <name>atwd_channel</name>
+    <unsignedInt default="0" maxValue="2" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>PMT high-voltage high in volts </description>
+    <name>pmt_hv_high_volt</name>
+    <unsignedInt default="1200" minValue="0" maxValue="2047"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>LED DAC value </description>
+    <name>LED_dac</name>
+    <unsignedInt default="0" minValue="0" maxValue="2047"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>MUX BIAS DAC value </description>
+    <name>atwd_mux_bias_dac</name>
+    <unsignedInt default="0" minValue="0" maxValue="1023"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>ATWD and LED delay in ns </description>
+    <name>delay_in_ns</name>
+    <unsignedInt default="500" minValue="26" maxValue="100000000"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Number of SPE waveforms to collect and average</description>
+    <name>loop_count</name>
+    <unsignedInt default="1000" minValue="0" maxValue="1000000"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Number of pedestal waveforms to acquire and average</description>
+    <name>n_pedestal_waveforms</name>
+    <unsignedInt default="50"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Should we do pedestal subtraction?</description>
+    <name>pedestal_subtraction</name>
+    <boolean default="true"/>
+  </inputParameter>
+
+  <outputParameter>
+    <description>Actual high-voltage high output read from base</description>
+    <name>real_hv_output</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Actual LED output voltage</description>
+    <name>real_LED_voltage</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Waveform of baseline in ATWD counts units</description>
+    <name>atwd_baseline_waveform</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Width of the ATWD waveform</description>
+    <name>atwd_waveform_width</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Amplitude of the ATWD waveform</description>
+    <name>atwd_waveform_amplitude</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Pulse peak position in ATWD samples units</description>
+    <name>atwd_waveform_position</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Average ATWD waveform for PMT-LED</description>
+    <name>atwd_waveform_pmtLED</name>
+    <unsignedIntArray length="128"/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Waveform of baseline for LED in ATWD counts units</description>
+    <name>LED_baseline_waveform</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Width of the LED current waveform</description>
+    <name>LED_waveform_width</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Amplitude of the LED current waveform</description>
+    <name>LED_waveform_amplitude</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Pulse peak position in LED current samples units</description>
+    <name>LED_waveform_position</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Average LED current waveform</description>
+    <name>LED_waveform_pmtLED</name>
+    <unsignedIntArray length="128"/>
+  </outputParameter>
+
+</stf:test>

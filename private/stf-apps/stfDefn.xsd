@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://glacier.lbl.gov/icecube/daq/stf" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="test">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="name" type="xs:string"/>
+        <xs:element name="description" type="xs:string"/>
+        <xs:element name="version">
+          <xs:complexType>
+            <xs:attribute name="major" type="xs:nonNegativeInteger" use="required"/>
+            <xs:attribute name="minor" type="xs:nonNegativeInteger" use="required"/>
+          </xs:complexType>
+        </xs:element>
+        <xs:element maxOccurs="unbounded" minOccurs="0" name="inputParameter">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="name" type="xs:string"/>
+              <xs:choice>
+                <xs:element name="boolean">
+                  <xs:complexType>
+                    <xs:attribute name="default" type="xs:boolean" use="required"/>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="string">
+                  <xs:complexType>
+                    <xs:attribute name="default" type="xs:string" use="required"/>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="unsignedInt">
+                  <xs:complexType>
+                    <xs:attribute name="minValue" type="xs:unsignedInt" use="required"/>
+                    <xs:attribute name="maxValue" type="xs:unsignedInt" use="required"/>
+                    <xs:attribute name="default" type="xs:unsignedInt" use="required"/>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element name="unsignedLong">
+                  <xs:complexType>
+                     <xs:attribute name="minValue" type="xs:unsignedLong" use="required"/>
+                    <xs:attribute name="maxValue" type="xs:unsignedLong" use="required"/>
+                    <xs:attribute name="default" type="xs:unsignedLong" use="required"/>
+                 </xs:complexType>
+                </xs:element>
+              </xs:choice>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+        <xs:element maxOccurs="unbounded" minOccurs="0" name="outputParameter">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="name" type="xs:string"/>
+              <xs:choice>
+                <xs:element name="boolean">
+                  <xs:complexType/>
+                </xs:element>
+                <xs:element name="string">
+                  <xs:complexType/>
+                </xs:element>
+                <xs:element name="unsignedInt">
+                  <xs:complexType/>
+                </xs:element>
+                <xs:element name="unsignedLong">
+                  <xs:complexType/>
+                </xs:element>
+              </xs:choice>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

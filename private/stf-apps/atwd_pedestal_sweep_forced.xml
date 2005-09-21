@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>atwd_pedestal_sweep_forced</name>
+  <description>ATWD pedestal_atwd vs pedestal_voltage test</description>
+  <version major="1" minor="0"/>
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD sampling speed</description>
+    <name>atwd_sampling_speed_dac</name>
+    <unsignedInt default="850" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Top Voltage</description>
+    <name>atwd_ramp_top_dac</name>
+    <unsignedInt default="2097" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Bias current </description>
+    <name>atwd_ramp_bias_dac</name>
+    <unsignedInt default="3000" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>ATWD Analog Reference Voltage Input</description>
+    <name>atwd_analog_ref_dac</name>
+    <unsignedInt default="2048" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Pedestal Voltage</description>
+    <name>atwd_pedestal_dac</name>
+    <unsignedInt default="1925" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting for ATWD 1st stage output clamping</description>
+    <name>atwd_ch0_clamp</name>
+    <unsignedInt default="0" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects one of two chips (A or B) on the board:0=ATWD-A and 1=ATWD-B </description>
+    <name>atwd_chip_a_or_b</name>
+    <unsignedInt default="0" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects one of 3 PMT analog signal channels with different gains</description>
+    <name>atwd_channel</name>
+    <unsignedInt default="0" maxValue="2" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects ATWD launch method: 0=forced trigger, 1=SPE discriminator trigger</description>
+    <name>atwd_trig_forced_or_spe</name>
+    <unsignedInt default="0" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <outputParameter>
+    <description>Number of ATWD counts per volt</description>
+    <name>half_range_counts_per_volt</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Number of ATWD counts per volt</description>
+    <name>full_range_counts_per_volt</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Percent variation of the slope (count/volts) from 1/2 to full range</description>
+    <name>linearity_pedestal_percent</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>pedestal value in atwd counts for all pedestal settings</description>
+    <name>atwd_pedestal_sweep_forced</name>
+    <unsignedInt/>
+  </outputParameter>
+
+</stf:test>
+
+
+
+
+
+
+
+
+
+

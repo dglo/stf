@@ -1,0 +1,134 @@
+#!/bin/sh
+
+#
+# include common functions, variables...
+#
+# qryParam
+#
+source /usr/lib/cgi-bin/stf/xml/bin/common.sh
+
+#
+# run-test [IN query string (QUERY_STRING)]
+#
+# 1) fname     <- get file name (mk-name)
+# 2) testname  <- get test name from query string
+# 3) fname.xml <- create xml file from query string
+# 4) run test [ stf -send fname -go testname -rcv testname fname-results]
+# 5) update summary file (database)
+# 6) format results as html
+#
+echo "Content-type: text/html"
+echo
+
+#
+# 1) set fname
+#
+fname=`mk-name`
+
+#
+# 2) get test name from query string
+#
+testname=`echo $QUERY_STRING | qryParam test`
+
+if [[ ${#testname} == 0 ]]; then
+  echo "<h2>Error! no test specified</h2>"
+  exit 0
+fi
+
+#
+# make sure testname exists!
+#
+if [[ ! -d ${xmlpath}/${testname} ]]; then 
+    echo "<h2>Error\!  Test ${testname} not found</h2>"
+    exit 0
+fi
+
+#
+# validate query string...
+#
+msg=""
+msg=`echo $QUERY_STRING | splitParams | \
+    awk -v test=${testname} -f /usr/lib/cgi-bin/stf/xml/bin/validate-qry.awk`
+
+if [[ $msg != "" ]]; then
+    echo "<h2>Error: ${testname}: $msg</h2>"
+    exit 0
+fi
+
+#
+# 3) create xml file from query string...
+#
+qxml=${fname}-qry.xml
+
+# 
+# mkTestXml testName
+#
+function mkTestXml() {
+    echo ${QUERY_STRING} | splitParams | \
+	awk -v test=$1 -f /usr/lib/cgi-bin/stf/xml/bin/qrytoxml.awk
+}
+
+mkTestXml `echo $QUERY_STRING | qryParam test` > ${xmlpath}/${testname}/${qxml}
+
+fullqxml=${xmlpath}/${testname}/${qxml}
+fullrxml=${xmlpath}/${testname}/${fname}-results.xml
+
+#
+# get current picks from cookie or set default (first
+# in servers file...
+#
+stfserver=`echo $HTTP_COOKIE | qryCookie stfserver`
+
+
+if [[ ${#stfserver} == 0 ]]; then
+    stfserver=`head -1 ${xmlpath}/servers | awk '{print $1}'`
+fi
+
+stfport=`echo $HTTP_COOKIE | qryCookie stfport`
+if [[ ${#stfport} == 0 ]]; then
+    stfport=`head -1 ${xmlpath}/servers | awk '{print $2}'`
+fi
+
+echo "<h3>Running Test: server is ${stfserver} , port is ${stfport}</h3>"
+
+#
+# 4) run the test
+#
+touch ${xmlpath}/${stfserver}:${stfport}
+chkpt 100 \
+    stftcp ${stfserver} `expr ${stfport} + 3000` \
+	-send ${fullqxml} -go ${testname} \
+	-rcv ${testname} ${fullrxml} >& /tmp/stf.out
+rm -f ${xmlpath}/${stfserver}:${stfport}
+
+if [[ ! -e ${fullrxml} ]]; then
+    echo "<h3>Error: couldn't create results</h3>"
+    echo "<p>The reason:"
+    echo "<pre>"
+    cat /tmp/stf.out
+    echo "</pre>"
+    exit 0
+fi
+
+#
+# 5) update summary file
+#
+restt=/usr/lib/cgi-bin/stf/xml/bin/restotab.awk
+tabts=/usr/lib/cgi-bin/stf/xml/bin/tabtosum.awk
+
+summary=`xmlv ${fullrxml} | awk -f ${restt} | awk -f ${tabts}`
+tm=`gawk 'BEGIN { printf "%s", systime() }'`
+echo ${tm} ${summary} ${fname} >> ${xmlpath}/summary
+
+#
+# 6) display results...
+#
+tabth=/usr/lib/cgi-bin/stf/xml/bin/tabtohtml.awk
+xmlv ${fullrxml} | awk -f ${restt} | awk -f ${tabth}
+
+
+
+
+
+
+

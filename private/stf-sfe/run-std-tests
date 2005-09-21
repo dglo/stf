@@ -1,0 +1,144 @@
+#!/bin/sh
+
+#
+# include common functions, variables...
+#
+# qryParam
+#
+source /usr/lib/cgi-bin/stf/xml/bin/common.sh
+
+#
+# run-std-tests
+#
+#
+# given a set of xml files in /var/www/stf/xml/std-tests
+# put the results in /var/www/stf/xml/std-results
+#
+echo "Content-type: text/html"
+echo
+
+#
+# 1) set fname
+#
+fname=`mk-name`
+
+#
+# 2) get test name from query string
+#
+testnames=`(cd /var/www/stf/xml/std-tests; lessecho *.xml)`
+
+if [[ ${#testnames} == 0 ]]; then
+  echo "<h2>Error! no tests specified</h2>"
+  exit 0
+fi
+
+#
+# make sure testname exists!
+#
+if [[ ! -d ${xmlpath}/std-results ]]; then 
+    echo "<h2>Error\!  No results directory</h2>"
+    exit 0
+fi
+
+#
+# get the list of stfservers -- and put them
+# in stfmode...
+#
+stfmode > /tmp/dhtab.$$
+
+ndoms=`wc -l /tmp/dhtab.$$ | awk '{print $1; }'`
+ntests=`echo ${testnames} | wc -w`
+
+#
+#
+# setup the header...
+#
+echo "<html>"
+echo "<head>"
+echo "<title>Run all tests</title>"
+echo "</head>"
+echo "<body>"
+
+echo "<h2>ntests: ${ntests}</h2>"
+
+#
+# setup the table
+#
+echo "<table><tbody>"
+echo "<tr> <th>Card</th> <th>Channel</th> <th>DOM</th>";
+for (( i=1; i <= ${ntests} ; i++ )); do
+    echo "<th>${i}</th>"
+done
+echo "</tr>";
+
+for (( i=1; i<=${ndoms}; i++ )); do
+    dhline=`sed -n "${i}p" /tmp/dhtab.$$`
+    stfserver=`echo ${dhline} | awk '{print $1;}'`
+    stfport=`echo ${dhline} | awk '{print $2;}'`
+
+    echo "<tr>"
+    echo "<td>" `echo ${dhline} | awk '{print $3;}'` "</td>"
+    echo "<td>" `echo ${dhline} | awk '{print $4;}'` "</td>"
+    echo "<td>" `echo ${dhline} | awk '{print $5;}'` "</td>"
+
+    for f in ${testnames}; do
+	fullqxml=${xmlpath}/std-tests/$f
+	fullrxml=${xmlpath}/std-results/$f
+
+	testname=`xmlv ${fullqxml} | \
+	    awk '/^\(/ { depth++; if (depth==2) print substr($0, 2); } '`
+	    
+	touch ${xmlpath}/${stfserver}:${stfport}
+	chkpt 100 \
+	    stftcp ${stfserver} `expr ${stfport} + 3000` \
+		-send ${fullqxml} -go ${testname} \
+		-rcv ${testname} ${fullrxml} >& /dev/null
+	rm -f ${xmlpath}/${stfserver}:${stfport}
+
+	if [[ ! -e ${fullrxml} ]]; then
+	    echo "<h3>Error: couldn't create results</h3>"
+	    echo "<p>The reason:"
+	    echo "<pre>"
+	    cat /tmp/stf.out
+	    echo "</pre>"
+	    exit 0
+	fi
+
+	#
+	# add results to db...
+	#
+	resid=`${javacmd} \
+		addresults -resultid -technician arthur ${fullrxml} | \
+	    egrep '^resultid	' | awk '{print $2;}'`
+
+	#
+	# find out if we passed...
+	#
+	cgiurl="http://deimos.lbl.gov/cgi-bin/stf"
+	echo "<td><a href=\"${cgiurl}/view-results?file=${resid}\">"
+	
+	restt=/usr/lib/cgi-bin/stf/xml/bin/restotab.awk
+	torf=`xmlv ${fullrxml} | awk -f ${restt} | \
+	    egrep "^${testname}	passed	" | \
+	    awk -F "\t" '{ print $3; }'`
+
+	if [[ ${torf} = "true" ]]; then
+	    echo "P"
+	else
+	    echo "F"
+	fi
+		
+	echo "</a></td>"
+    done
+    echo "</tr>"
+done
+
+echo "</tbody>";
+echo "</table>";
+echo "</body>";
+echo "</html>";
+
+rm -f /tmp/dhtab.$$
+
+
+

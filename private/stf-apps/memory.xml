@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://glacier.lbl.gov/icecube/daq/stf file:/Volumes/IceCube/WorkSpaces/jas-1/xml/daq/stfDefn.xsd">
+  <name>memory</name>
+  <description>Memory Tests</description>
+  <version major="1" minor="0"/>
+  <inputParameter>
+    <name>loopCount</name>
+    <unsignedInt default="0" maxValue="1000" minValue="1"/>
+  </inputParameter>
+  <inputParameter>
+    <name>fluffy</name>
+    <unsignedInt default="0" maxValue="1000" minValue="1"/>
+  </inputParameter>
+</stf:test>
