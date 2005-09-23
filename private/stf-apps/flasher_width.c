@@ -27,16 +27,14 @@
 #define N_LEDS                    12
 
 /* Maximum pulse width setting */
-#define FB_MAX_WIDTH             255
+/* Actual maximum is 255, but we max out the ATWD window before that */
+/* because we use such a high sampling speed */
+#define FB_MAX_WIDTH             220
 
 /* Pass/fail defines */
 /* Width in ATWD samples here is *approximately* same in ns */
-#define FB_MIN_ATWD_WIDTH         20
+#define FB_MIN_ATWD_WIDTH         10
 #define FB_MAX_ATWD_WIDTH         95
-
-/* Early abort pulse width measurement */
-/* If we measure this width, we can stop */
-#define FB_ATWD_WIDTH_DONE       100
 
 /* Rounding convert to int */
 #define round(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
@@ -60,7 +58,6 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
                            unsigned int * reset_time_us,
                            unsigned int * missing_width,
                            unsigned int * failing_led,
-                           unsigned int * failing_led_cnt,
                            unsigned int * led_avg_current
                            ) {
     
@@ -71,13 +68,8 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
         HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
 
     /* Default return values */
-    *failing_led_cnt = *failing_led = *missing_width = 0;
-    *config_time_us = *reset_time_us = *valid_time_us = 0;    
-
-    /* Per-LED fails */
-    int led_fail[N_LEDS];
-    for (i = 0; i < N_LEDS; i++)
-        led_fail[i] = 0;
+    *failing_led = *missing_width = 0;
+    *config_time_us = *reset_time_us = *valid_time_us = 0;
 
     static char dummy_id[9] = "deadbeef";
     *flasher_id = dummy_id;
@@ -207,9 +199,7 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
         /* Select which LED current to send from the flasherboard (encoded) */
         hal_FB_select_mux_input(DOM_FB_MUX_LED_1 + led);
 
-        w = 0;
-        int done = 0;
-        while ((w <= FB_MAX_WIDTH) && (!done)) {
+        for (w = 0; w <= FB_MAX_WIDTH; w++) {
 
             #ifdef VERBOSE
             printf("Setting pulse width to %d\n", w);
@@ -342,26 +332,13 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
             /* Stop flashing */
             hal_FPGA_TEST_stop_FB_flashing();
 
-            /* Check if we've gotten widths wide enough to stop testing */
-            done = (widths[w] >= FB_ATWD_WIDTH_DONE);
-
-            /* Increment width */
-            w++;
-
         } /* End width loop */
 
-        int w_max = w;
-
         /* Check to make sure all widths are covered by some setting */
-        int w_ref;
-        int found;
-        for (w_ref = 0; w_ref <= FB_MAX_ATWD_WIDTH; w_ref++) {
-            found = 0;
-            for (w = 0; w < w_max; w++) {                
+        int w_ref, found = 0;
+        for (w_ref = FB_MIN_ATWD_WIDTH; w_ref <= FB_MAX_ATWD_WIDTH; w_ref++) {
+            for (w = 0; w <= FB_MAX_WIDTH; w++) {
                 if ((int)widths[w] == w_ref) {
-                    #ifdef VERBOSE                   
-                    printf("Found wref %d at index %d\r\n", w_ref, w);
-                    #endif
                     found = 1;
                     break;
                 }
@@ -370,16 +347,8 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
                 #ifdef VERBOSE
                 printf("Found missing width: led %d, width %d\n",led+1,w_ref);
                 #endif
-                /* Check pass/fail condition */
-                if (w_ref > FB_MIN_ATWD_WIDTH) {
-                    led_fail[led] = 1;
-                }
-                /* Keep track of the largest one for reporting */
-                if (w_ref > *missing_width) {
-                    *missing_width = w_ref;
-                    if (w_ref > FB_MIN_ATWD_WIDTH) 
-                        *failing_led = led+1;
-                }
+                *failing_led = led+1;
+                *missing_width = w_ref;
             }
         }
         
@@ -409,14 +378,7 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
     #endif
 
     /* Check pass/fail conditions */
-    BOOLEAN passed = TRUE;
-    for (led = 0; led < N_LEDS; led++) {
-        *failing_led_cnt += led_fail[led];
-#ifdef VERBOSE
-        printf("LED %d: %s\r\n", (led+1), led_fail[led] ? "failed" : "passed");
-#endif
-        passed &= (led_fail[led] == 0);
-    }
+    BOOLEAN passed = (*missing_width > 0) ? FALSE : TRUE;
 
     /* Free allocated structures */
     free(atwd_pedestal[3]);

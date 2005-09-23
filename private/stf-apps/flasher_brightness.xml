@@ -4,7 +4,7 @@
   <name>flasher_brightness</name>
   <description>Flasher Board LED Brightness Test</description>
 
-  <version major="1" minor="6"/>
+  <version major="1" minor="4"/>
 
   <inputParameter>
     <description>DAC setting for ATWD sampling speed</description>
@@ -129,12 +129,6 @@
   <outputParameter>
     <description>LED with Minimum Slope of Brightness Fit</description>
     <name>min_slope_led</name>
-	<unsignedInt/>
-  </outputParameter>  
-
-  <outputParameter>
-    <description>Total Number of LEDs Failing Test</description>
-    <name>failing_led_cnt</name>
 	<unsignedInt/>
   </outputParameter>  
     

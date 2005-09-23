@@ -4,11 +4,6 @@
   <description>ATWD Pedestal Noise</description>
   <version major="1" minor="0"/>
   <inputParameter>
-    <description>Is this an integrated dom?</description>
-    <name>integrated</name>
-    <unsignedInt default="0" maxValue="1" minValue="0"/>
-  </inputParameter>
-  <inputParameter>
     <description>DAC setting (of a 12 Bit device) for ATWD sampling speed</description>
     <name>atwd_sampling_speed_dac</name>
     <unsignedInt default="850" maxValue="4095" minValue="0"/>

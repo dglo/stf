@@ -35,11 +35,11 @@
 
 /* Pass/fail defines */
 /* Maximum allowed deviation of each point from linear fit */
-#define MAX_ERR_PCT               10
+#define MAX_ERR_PCT                7
 
 /* Minimum current peak in ATWD units at maximum brightness */
-/* Nominal value is ~440, but decreases at cold temps */
-#define MIN_PEAK_MAX_BRIGHT      300
+/* About 85% of nominal value of 440 */
+#define MIN_PEAK_MAX_BRIGHT      375 
 
 /* Minimum slope of linear brightness relationship */
 /* Very loose condition -- nominal slope is 3.0 */
@@ -106,7 +106,6 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                                 unsigned int * worst_brightness_led,
                                 unsigned int * min_slope_x_100,
                                 unsigned int * min_slope_led,
-                                unsigned int * failing_led_cnt,
                                 unsigned int * led_avg_current
                              ) {
 
@@ -121,7 +120,6 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     *min_peak_brightness_atwd = *worst_brightness_led = 0;
     *config_time_us = *reset_time_us = *valid_time_us = 0;
     *min_slope_x_100 = *min_slope_led = 0;
-    *failing_led_cnt = 0;
 
     static char dummy_id[9] = "deadbeef";
     *flasher_id = dummy_id;
@@ -145,11 +143,6 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
         if (currents[i] == NULL)
             return FALSE;
     }
-
-    /* Per-LED fails */
-    int led_fail[N_LEDS];
-    for (i = 0; i < N_LEDS; i++) 
-        led_fail[i] = 0;
 
     /* Peaks in current wavesforms */
     int peaks[N_BRIGHTS];
@@ -378,11 +371,7 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
             pred = slope*brights[i] + intercept;
             err_pct = abs(round(((pred - peaks[i]) * 100.0 / pred)));
             
-            /* Check linearity error for pass/fail */
-            if (err_pct > MAX_ERR_PCT)
-                led_fail[led] = 1;
-
-            /* Record worst linearity error */
+            /* Record worst error */
             if (err_pct > *max_current_err_pct) {                
                 *max_current_err_pct = err_pct;
                 *worst_linearity_led = led+1;
@@ -394,10 +383,6 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
             }
         }      
 
-        /* Check minimum brightness for pass/fail */
-        if (peaks[N_BRIGHTS-1] < MIN_PEAK_MAX_BRIGHT)
-            led_fail[led] = 1;
-
         /* Record minimum brightness at peak setting */
         if ((led == 0) || ((peaks[N_BRIGHTS-1] < *min_peak_brightness_atwd))) {
             *min_peak_brightness_atwd = peaks[N_BRIGHTS-1];
@@ -407,10 +392,6 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                    led+1, *min_peak_brightness_atwd);
             #endif
         }
-
-        /* Check slope for pass fail */
-        if (slope < MIN_SLOPE)
-            led_fail[led] = 1;
 
         /* Keep track of minimum slope */
         if ((led == 0) || ((int)(slope*100) < *min_slope_x_100)) {
@@ -447,16 +428,12 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     #endif
 
     /* Check pass/fail conditions */
-    /* Individual conditions checked above; just OR all the per-LED fails here */
     BOOLEAN passed = TRUE;
-    for (led = 0; led < N_LEDS; led++) {
-        *failing_led_cnt += led_fail[led];
-#ifdef VERBOSE
-        printf("LED %d: %s\r\n", (led+1), led_fail[led] ? "failed" : "passed");
-#endif
-        passed &= (led_fail[led] == 0);
-    }
 
+    passed  = (*max_current_err_pct > MAX_ERR_PCT) ? FALSE : TRUE;
+    passed &= (*min_peak_brightness_atwd > MIN_PEAK_MAX_BRIGHT);
+    passed &= (*min_slope_x_100 > (int)(MIN_SLOPE*100));
+    
     /* Free allocated structures */
     free(atwd_pedestal[3]);
     free(channels[3]);
