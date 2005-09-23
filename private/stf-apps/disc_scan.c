@@ -29,7 +29,7 @@ BOOLEAN disc_scanEntry(STF_DESCRIPTOR *d,
    int zero_dac, window_dac;
    int dac = (disc_spe_or_mpe) ? DOM_HAL_DAC_MULTIPLE_SPE_THRESH :
       DOM_HAL_DAC_SINGLE_SPE_THRESH;
-   int i, maxi;
+   int i;
    unsigned edge_pos=0;
    DOM_HAL_FPGA_PULSER_RATES rate;
    static const unsigned nominalRate = (1000*78)/100;

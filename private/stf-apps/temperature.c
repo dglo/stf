@@ -6,6 +6,7 @@
 
 #include "stf/stf.h"
 #include "stf-apps/temperature.h"
+#include "hal/DOM_MB_pld.h"
 
 BOOLEAN temperatureInit(STF_DESCRIPTOR *d) {
    return TRUE;

@@ -40,7 +40,7 @@ BOOLEAN flasher_clockEntry(STF_DESCRIPTOR *desc,
 
     /* Initialize the flaherboard and power up */
     /* Record configuration and clock validation times */
-    int err = hal_FB_enable(config_time_us, valid_time_us, reset_time_us);
+    int err = hal_FB_enable(config_time_us, valid_time_us, reset_time_us, DOM_FPGA_TEST);
     if (err != 0) {
 #ifdef VERBOSE
         printf("Flasher board enable failure (%d)!  Aborting test!\r\n", err);

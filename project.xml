@@ -1,7 +1,7 @@
 <project>
 	<name>stf</name>
-	<packages default="icecube.daq.stf">
-		icecube.daq.stf
+	<packages default="icecube.daq.stf.autogen">
+		icecube.daq.stf.autogen
 	</packages>
 	<uses>
 		<libs>
@@ -13,7 +13,6 @@
 	</uses>
 	<test>
 		<uses>
-			<libs/>
 			<tools>junit.jar</tools>
 		</uses>
 	</test>

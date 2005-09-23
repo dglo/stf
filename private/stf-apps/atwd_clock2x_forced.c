@@ -1,10 +1,10 @@
-/* atwd_clock1x_forced.c, skeleton file created by gendir
+/* atwd_clock2x_forced.c, skeleton file created by gendir
  */
 #include <stddef.h>
 #include <stdlib.h>
 
 #include "stf/stf.h"
-#include "stf-apps/atwd_clock1x_forced.h"
+#include "stf-apps/atwd_clock2x_forced.h" 
 
 #include "stf-apps/atwdUtils.h"
 
@@ -13,7 +13,7 @@
 
 static float findFirstPeak(unsigned *w);
 
-BOOLEAN atwd_clock1x_forcedInit(STF_DESCRIPTOR *d) {
+BOOLEAN atwd_clock2x_forcedInit(STF_DESCRIPTOR *d) {
    return TRUE;
 }
 
@@ -85,7 +85,7 @@ static float findFirstPeak(unsigned *w) {
    }
 }
 
-BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
+BOOLEAN atwd_clock2x_forcedEntry(STF_DESCRIPTOR *d,
                     unsigned atwd_sampling_speed_dac,
                     unsigned atwd_ramp_top_dac,
                     unsigned atwd_ramp_bias_dac,
@@ -96,7 +96,9 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
                     unsigned *atwd_clock1x_amplitude,
                     unsigned *atwd_sampling_speed_MHz,
                     unsigned *atwd_sampling_speed_dac_300MHz,
-                    unsigned *atwd_clock1x_waveform) {
+		    unsigned *atwd_clock1x_waveform,
+		    unsigned * ATWD_clock) /* add new output parameter*/
+ {
    int i;
    const int ch = (atwd_chip_a_or_b) ? 0 : 4;
    const int cnt = 128;
@@ -120,7 +122,7 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    prescanATWD(trigger_mask);
    
-   halSelectAnalogMuxInput(DOM_HAL_MUX_OSC_OUTPUT);
+   halSelectAnalogMuxInput(DOM_HAL_MUX_40MHZ_SQUARE);/*run test with 40MHz*/
 
    halUSleep(100);
    
@@ -175,6 +177,7 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    /* report sampling speed in MHz... */
    *atwd_sampling_speed_MHz /= 1000000;
+   *ATWD_clock = *atwd_clock1x_amplitude;/*data for new output paramter*/
 
    return 
       *atwd_clock1x_amplitude >= 250 &&

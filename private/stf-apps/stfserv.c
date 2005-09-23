@@ -85,6 +85,7 @@ static void startElement(void *userData, const char *name, const char **atts) {
      break;
   case 2:
      if (strcmp(xmlTag, "version")==0) {
+#if 0
 	const int major = atoi(atts[0]);
 	const int minor = atoi(atts[1]);
 	const int err = 
@@ -92,6 +93,7 @@ static void startElement(void *userData, const char *name, const char **atts) {
 	
 	/* FIXME: what do we do now?!?!
 	 */
+#endif
      } else if (strcmp(xmlTag, "parameters")==0) {
 	/* printf("parameters!\n"); */
      }
@@ -123,7 +125,6 @@ static void endElement(void *userData, const char *name) {
 
 /* s is not 0 terminated. */
 static void characterData(void *userData, const XML_Char *s, int len) {
-   int *depthPtr = (int *) userData;
    char str[64];
 
    memcpy(str, s, len);

@@ -1,52 +1,64 @@
-/* atwd_clock1x_forced.c, skeleton file created by gendir
+/* atwd_sample_periode.c, skeleton file created by gendir
  */
+
 #include <stddef.h>
 #include <stdlib.h>
 
 #include "stf/stf.h"
-#include "stf-apps/atwd_clock1x_forced.h"
+#include "stf-apps/atwd_sample_periode.h"
 
 #include "stf-apps/atwdUtils.h"
 
 #include "hal/DOM_MB_hal.h"
 #include "hal/DOM_MB_fpga.h"
 
-static float findFirstPeak(unsigned *w);
+static float findFirstPeak(unsigned *w,int N);
 
-BOOLEAN atwd_clock1x_forcedInit(STF_DESCRIPTOR *d) {
+
+BOOLEAN atwd_sample_periodeInit(STF_DESCRIPTOR *d) {
    return TRUE;
 }
 
 /* find period in an atwd waveform
  */
-static unsigned findPeriod(unsigned *w) {
-   int *mn = (unsigned *) calloc(128, sizeof(unsigned));
-   unsigned *cg = (unsigned *) calloc(128, sizeof(unsigned));
+static unsigned findPeriod(unsigned *w,int N)
+ {
+  
+   int *mn = (unsigned *) calloc(N, sizeof(unsigned));
+   unsigned *cg = (unsigned *) calloc(N, sizeof(unsigned));
    int i, j;
    double sum = 0;
    unsigned period;
-
-   /* first subtract mean...
-    */
-   for (i=0; i<128; i++) sum += w[i];
-   sum/=128;
-   for (i=0; i<128; i++) mn[i] = (int)w[i] - (int) sum;
-
-   /* now compute autocorrelagram */
-   for (i=0; i<128; i++) {
-      int val = 0;
-      for (j=0; j<128; j++)
-	 /* FIXME: this is wrong, corr can be negative! */
-	 val += mn[j]*mn[(i+j)&0x7f];
-      cg[i] = (val<0) ? 0 : val;
-   }
-
-
-   period = (unsigned) (findFirstPeak(cg)*20e6);
    
+   /* first subtract mean...*/
+   
+     for (i=0; i<N; i++) sum += w[i];
+     
+     sum/=N; 
+
+     for (i=0; i<N; i++) mn[i] = (int) w[i] - (int) sum;
+   
+     
+   /* now compute autocorrelagram */ 
+   for (i=0; i<N; i++)
+     {  
+
+     int val = 0;            /* j = is the time, i = is the lag time, mn = mean value */
+    
+     for (j=0; j<N; j++) val += mn[j]* mn[(j+i)&0x7f];
+           
+      
+     cg += val;	
+      
+     }
+     
+  
+   
+   period = (unsigned) (findFirstPeak (cg,N)*40e6); 
+     
    free(mn);
-   free(cg);
-   return period;
+   return cg;
+  
 }
 
 /* find the period of a signal given
@@ -54,25 +66,25 @@ static unsigned findPeriod(unsigned *w) {
  *
  * 1) go till we have a zero
  * 2) go while we're increasing...
- * 3) return peak value...
- *
+ * 3) return peak value...  
+ *int 
  * return index or -1 on error...
  */
-static float findFirstPeak(unsigned *w) {
+static float findFirstPeak(unsigned *w,int N) {
    int i, prev=0;
 
-   for (i=0; i<128; i++) {
+   for (i=0; i<N; i++) {
       if (w[i]==0) break;
    }
 
-   if (i==0 || i==128) return -1;
+   if (i==0 || i==N) return -1;
    
-   while (i<128 && w[i]>=prev) {
+   while (i<N && w[i]>=prev) {
       prev = w[i];
       i++;
    }
 
-   if (i>=127) return -1;
+   if (i>=(N-1)) return -1;
 
    /* fit a parabola here...
     */
@@ -85,7 +97,7 @@ static float findFirstPeak(unsigned *w) {
    }
 }
 
-BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
+BOOLEAN atwd_sample_periodeEntry(STF_DESCRIPTOR *d,
                     unsigned atwd_sampling_speed_dac,
                     unsigned atwd_ramp_top_dac,
                     unsigned atwd_ramp_bias_dac,
@@ -93,10 +105,15 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
                     unsigned atwd_pedestal_dac,
                     unsigned atwd_chip_a_or_b,
                     unsigned loop_count,
+		    unsigned window_width,/*add new input*/
                     unsigned *atwd_clock1x_amplitude,
                     unsigned *atwd_sampling_speed_MHz,
                     unsigned *atwd_sampling_speed_dac_300MHz,
-                    unsigned *atwd_clock1x_waveform) {
+                    unsigned *atwd_clock1x_waveform,
+	            unsigned *sample_per_periode) /*add new array*/
+   
+{
+
    int i;
    const int ch = (atwd_chip_a_or_b) ? 0 : 4;
    const int cnt = 128;
@@ -120,7 +137,7 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    prescanATWD(trigger_mask);
    
-   halSelectAnalogMuxInput(DOM_HAL_MUX_OSC_OUTPUT);
+   halSelectAnalogMuxInput(DOM_HAL_MUX_40MHZ_SQUARE);/*run test with 40MHz*/
 
    halUSleep(100);
    
@@ -129,11 +146,12 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    /* find sampling rate at current dac setting...
     */
-   *atwd_sampling_speed_MHz = findPeriod(atwd_clock1x_waveform);
+   *atwd_sampling_speed_MHz = findPeriod(atwd_clock1x_waveform,128);
 
    /* get min and max */
    minv = atwd_clock1x_waveform[0];
    maxv = atwd_clock1x_waveform[0];
+
    for (i=1; i<cnt; i++) {
       if (atwd_clock1x_waveform[i]>maxv) {
 	 maxv = atwd_clock1x_waveform[i];
@@ -146,10 +164,18 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    /* add 500 counts to current dac setting and try again...
     */
-   halWriteDAC(ch, atwd_sampling_speed_dac+500);
+   halWriteDAC(ch, atwd_sampling_speed_dac);
    halUSleep(1000*10);
    getSummedWaveform(loop_count, trigger_mask, 3, waveform);
-   mhz = findPeriod(waveform);
+
+   /* mhz = findPeriod(waveform,window_width);*/
+   
+
+   for (i=0;i<128-window_width;i++)
+     {
+       sample_per_periode[i]=findPeriod(waveform+i,window_width);
+     }
+
 
    /* compute line through these points...
     */
@@ -175,6 +201,7 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    /* report sampling speed in MHz... */
    *atwd_sampling_speed_MHz /= 1000000;
+   
 
    return 
       *atwd_clock1x_amplitude >= 250 &&
@@ -183,4 +210,3 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
       *atwd_sampling_speed_MHz >= 250 &&
       *atwd_sampling_speed_dac_300MHz < 4095;
 }
-
