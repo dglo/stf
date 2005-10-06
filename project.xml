@@ -1,7 +1,7 @@
 <project>
 	<name>stf</name>
 	<packages default="icecube.daq.stf">
-		icecube.daq.stf
+		icecube.daq.stf.autogen
 	</packages>
 	<uses>
 		<libs>
