@@ -15,7 +15,7 @@
 /* Prototypes
  */
 
-/* this is called before every GO of a test...
+/* Module level variables
  */
 void stfInitTest(STF_DESCRIPTOR *sd) {
    if (!sd->isInit) {
@@ -29,48 +29,17 @@ void stfInitTest(STF_DESCRIPTOR *sd) {
       for (i=0; i<sd->nParams; i++) {
 	 if (strcmp(sd->params[i].type, UINT_ARRAY_TYPE)==0) {
 	    sd->params[i].value.intArrayValue = 
-	       (unsigned *) malloc(sd->params[i].arrayLength*sizeof(unsigned));
+	       (unsigned *) calloc(sd->params[i].arrayLength,
+				   sizeof(unsigned));
 	 }
 	 if (strcmp(sd->params[i].type, ULONG_ARRAY_TYPE)==0) {
 	    sd->params[i].value.longArrayValue = 
-	       (unsigned long *) malloc(sd->params[i].arrayLength*
-                                        sizeof(unsigned long));
+	       (unsigned long *) calloc(sd->params[i].arrayLength,
+				   sizeof(unsigned long));
 	 }
       }
    }
-   
-   /* always zero outputs... 
-    */
-   {
-      int i;
-      
-      for (i=0; i<sd->nParams; i++) {
-         /* only process output variables... */
-         if (strcmp(sd->params[i].class, OUTPUT_PARAM)!=0) continue;
 
-         if (strcmp(sd->params[i].type, CHAR_TYPE)==0) {
-            sd->params[i].value.charValue = NULL;
-         }
-         else if (strcmp(sd->params[i].type, UINT_TYPE)==0) {
-            sd->params[i].value.intValue = 0;
-         }
-         else if (strcmp(sd->params[i].type, ULONG_TYPE)==0) {
-            sd->params[i].value.longValue = 0UL;
-         }
-         else if (strcmp(sd->params[i].type, BOOLEAN_TYPE)==0) {
-            sd->params[i].value.boolValue = FALSE;
-         }
-         else if (strcmp(sd->params[i].type, UINT_ARRAY_TYPE)==0) {
-            memset(sd->params[i].value.intArrayValue, 0,
-                   sd->params[i].arrayLength*sizeof(unsigned));
-         }
-         else if (strcmp(sd->params[i].type, ULONG_ARRAY_TYPE)==0) {
-            memset(sd->params[i].value.longArrayValue, 0,
-                   sd->params[i].arrayLength*sizeof(unsigned long));
-         }
-      }
-   }
-   
    /* always clear pld and fpga state...
     */
    {  const int xxx = 0;

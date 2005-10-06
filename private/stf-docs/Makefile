@@ -5,10 +5,7 @@ TEXS = ADC-inputs.tex ADC-outputs.tex \
 	atwd_pulser-inputs.tex atwd_pulser-outputs.tex \
 	memory-inputs.tex memory-outputs.tex
 
-all: stf-tests.pdf
-
 stf-tests.dvi: $(TEXS) stf-tests.tex stf-tests.ind 
-	latex stf-tests.tex
 	latex stf-tests.tex
 
 stf-tests.ind: stf-tests.idx
@@ -22,16 +19,14 @@ stf-tests.ps: stf-tests.dvi
 
 stf-tests.pdf : $(TEXS) stf-tests.tex stf-tests.ind
 	pdflatex stf-tests.tex
-	pdflatex stf-tests.tex
 
-install: stf-tests.pdf
-	scp stf-tests.pdf glacier.lbl.gov:public_html/dom
+install: stf-tests.pdf stf-tests.ps stf-tests.dvi
+	cp -v stf-tests.pdf stf-tests.ps stf-tests.dvi ~/public_html/dom
 
 clean:
 	rm -f stf-tests.dvi stf-tests.ind stf-tests.log stf-tests.aux \
 		stf-tests.ilg *.tab *-inputs.tex *-outputs.tex \
-		stf-tests.idx stf-tests.out stf-tests.pdf stf-tests.toc \
-		stf-tests.ps
+		stf-tests.idx stf-tests.out stf-tests.pdf stf-tests.toc
 
 ADC.tab: ../stf-sfe/stftotab.awk ../stf-apps/ADC.xml
 	xmlv ../stf-apps/ADC.xml | \

@@ -26,7 +26,7 @@ BOOLEAN pressureEntry(STF_DESCRIPTOR *d,
                     unsigned *adc_rms_kpascal,
                     unsigned *adc_max_kpascal,
                     unsigned *adc_min_kpascal) {
-  unsigned loop_n;
+  unsigned loop_n, x;
   double pressure_sum, voltage_sum;
   unsigned voltage_value;
   unsigned Adc_5v_mean_counts;
@@ -41,6 +41,12 @@ BOOLEAN pressureEntry(STF_DESCRIPTOR *d,
   halUSleep(2000000);
   /* add 2 sec wait */
   pressure_sum = voltage_sum = 0;
+
+  /* throw first few data out because in cold, first few data are BAD */
+  for(x=0; x<10;x++){
+     halReadADC(DOM_HAL_ADC_PRESSURE);    
+     halReadADC(DOM_HAL_ADC_5V_POWER_SUPPLY);
+  }
 
   for(loop_n=0;loop_n<loop_count;loop_n++) {
      buff[loop_n] = halReadADC(DOM_HAL_ADC_PRESSURE);
@@ -108,7 +114,3 @@ BOOLEAN pressureEntry(STF_DESCRIPTOR *d,
  
   return TRUE; 
 }
-
-
-
-

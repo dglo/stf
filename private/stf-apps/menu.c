@@ -18,10 +18,11 @@ static void getstr(char *str) {
 	    *str = 0;
 	    return;
 	 }
-	 else if (*str != '\n') {
+	 else {
 	    write(1, str, 1);
 	    str++;
-	 }            
+	 }
+	 
       }
    }
 }

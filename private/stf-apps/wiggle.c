@@ -18,6 +18,7 @@ int main(void) {
       int i;
       
       for (i=0; i<750 * 1000; i++) {
+         char v;
          rand = rand*69069 + 1;
          halUSleep(1);
          hal_FPGA_TEST_comm_bit_bang_dac( (rand&0xff)>>WIGGLE_SHIFT );
