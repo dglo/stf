@@ -20,8 +20,20 @@ echo "  <body>"
 #
 # FIXME: check for parameters -- add link to search...
 #
-sort -rn /var/www/stf/xml/summary | \
-    gawk -f /usr/lib/cgi-bin/stf/xml/bin/sumtotable.awk
+qry="select \
+       r.date_tested, tt.name, r.prod_id, r.passed, r.stf_result_id \
+     from \
+       STFResult r, STFTest t, STFTestType tt \
+     where \
+       r.stf_test_id=t.stf_test_id and \
+       t.stf_testtype_id=tt.stf_testtype_id \
+     order by \
+       r.date_tested \
+     desc
+     limit 200;"
+
+${mysqlcmd} "${qry}" | \
+    gawk -F "\t" -f /usr/lib/cgi-bin/stf/xml/bin/sumtotable.awk
 
 #
 # FIXME: search code goes here...

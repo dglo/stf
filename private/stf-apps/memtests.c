@@ -9,19 +9,15 @@
  */
 #include <stdio.h>
 
+#include "stf/memtests.h"
+
 #define RAND32 0x16383245
-#define OK 0
-#define ERROR 1
-
-typedef unsigned int ui32;
-
-#include "sfi.h"
 
 /* Data. */
 int silent_test = 0;
 
 /* Function definitions. */
-static int test_verify_success (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_verify_success (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i;
@@ -36,7 +32,7 @@ static int test_verify_success (ui32 *bp1, ui32 *bp2, ui32 count) {
   return OK;
 }
 
-static int test_random_value(ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_random_value(ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i;
@@ -48,7 +44,7 @@ static int test_random_value(ui32 *bp1, ui32 *bp2, ui32 count) {
   return test_verify_success (bp1, bp2, count);
 }
 
-static int test_xor_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_xor_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i;
@@ -63,7 +59,7 @@ static int test_xor_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   return (test_verify_success (bp1, bp2, count));
 }
 
-static int test_sub_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_sub_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i;
@@ -78,7 +74,7 @@ static int test_sub_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   return (test_verify_success (bp1, bp2, count));
 }
 
-static int test_mul_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_mul_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i;
@@ -93,7 +89,7 @@ static int test_mul_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   return (test_verify_success (bp1, bp2, count));
 }
 
-static int test_div_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_div_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i;
@@ -110,7 +106,7 @@ static int test_div_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
 }
 
 
-static int test_or_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_or_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i;
@@ -126,7 +122,7 @@ static int test_or_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
 }
 
 
-static int test_and_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_and_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i;
@@ -142,7 +138,7 @@ static int test_and_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
 }
 
 
-static int test_seqinc_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_seqinc_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i;
@@ -156,7 +152,7 @@ static int test_seqinc_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   return (test_verify_success (bp1, bp2, count));
 }
 
-static int test_solidbits_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_solidbits_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 q, i, j;
@@ -181,7 +177,7 @@ static int test_solidbits_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
 }
 
 
-static int test_checkerboard_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_checkerboard_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 q, i, j;
@@ -205,7 +201,7 @@ static int test_checkerboard_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   return (OK);
 }
 
-static int test_blockseq_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_blockseq_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i, j;
@@ -228,7 +224,7 @@ static int test_blockseq_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
 }
 
 
-static int test_walkbits_comparison (ui32 *bp1, ui32 *bp2, ui32 count, int m) {
+int test_walkbits_comparison (ui32 *bp1, ui32 *bp2, ui32 count, int m) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i, j;
@@ -262,7 +258,7 @@ static int test_walkbits_comparison (ui32 *bp1, ui32 *bp2, ui32 count, int m) {
 }
 
 
-static int test_bitspread_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_bitspread_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i, j;
@@ -298,7 +294,7 @@ static int test_bitspread_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   return (OK);
 }
 
-static int test_bitflip_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
+int test_bitflip_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   volatile ui32 *p1 = (volatile ui32 *) bp1;
   volatile ui32 *p2 = (volatile ui32 *) bp2;
   ui32 i, j, k;
@@ -326,7 +322,7 @@ static int test_bitflip_comparison (ui32 *bp1, ui32 *bp2, ui32 count) {
   return (OK);
 }
 
-static int test_stuck_address (ui32 *bp1, ui32 *unused, ui32 count) {
+int test_stuck_address (ui32 *bp1, ui32 *unused, ui32 count) {
   volatile ui32 *p1;
   /* second argument is not used; just gives it a compatible signature. */
   ui32 i, j;
@@ -356,21 +352,51 @@ static int test_stuck_address (ui32 *bp1, ui32 *unused, ui32 count) {
   return err;
 }
 
-void initMemTests(void) {
-  addConstantBucket("memtest-silent", (int) &silent_test);
-  addCFunc3Bucket("memtest-random-value", (CFunc3) test_random_value);
-  addCFunc3Bucket("memtest-xor-comparison", (CFunc3) test_xor_comparison);
-  addCFunc3Bucket("memtest-sub-comparison", (CFunc3) test_sub_comparison);
-  addCFunc3Bucket("memtest-mul-comparison", (CFunc3) test_mul_comparison);
-  addCFunc3Bucket("memtest-div-comparison", (CFunc3) test_div_comparison);
-  addCFunc3Bucket("memtest-or-comparison", (CFunc3) test_or_comparison);
-  addCFunc3Bucket("memtest-and-comparison", (CFunc3) test_and_comparison);
-  addCFunc3Bucket("memtest-seqinc-comparison", (CFunc3) test_seqinc_comparison);
-  addCFunc3Bucket("memtest-solidbits-comparison", (CFunc3) test_solidbits_comparison);
-  addCFunc3Bucket("memtest-checkerboard-comparison", (CFunc3) test_checkerboard_comparison);
-  addCFunc3Bucket("memtest-blockseq-comparison", (CFunc3) test_blockseq_comparison);
-  addCFunc3Bucket("memtest-walkbits-comparison", (CFunc3) test_walkbits_comparison);
-  addCFunc3Bucket("memtest-bitspread-comparison", (CFunc3) test_bitspread_comparison);
-  addCFunc3Bucket("memtest-bitflip-comparison", (CFunc3) test_bitflip_comparison);
-  addCFunc3Bucket("memtest-stuck-address", (CFunc3) test_stuck_address);
+int test_thorsten0f(ui32 *bp, ui32 *unused, ui32 count) {
+   ui32 i;
+   ui32 *save = bp;
+   int err = 0;
+   
+   for (i=0; i<count; i++, bp++) {
+      const unsigned addr = (unsigned) bp;
+      *bp = (addr>>5)&1 ? 0xffffffff : 0;
+   }
+   
+   bp = save;
+   for (i=0; i<count; i++, bp++) {
+      const unsigned addr = (unsigned) bp;
+      const ui32 ev = (addr>>5)&1 ? 0xffffffff : 0;
+      if ( *bp != ev) {
+	 printf("FAILURE: offset %d: expected: %08x, got: %08x\r\n",
+		i, ev, *bp);
+	 err = ERROR;
+      }
+   }
+
+   return err;
 }
+
+int test_thorsten16(ui32 *bp, ui32 *unused, ui32 count) {
+   ui32 i;
+   ui32 *save = bp;
+   int err = 0;
+   
+   for (i=0; i<count; i++, bp++) {
+      const unsigned addr = (unsigned) bp;
+      *bp = ((addr>>5)&1 ? 0xffffffff : 0)&0xffff;
+   }
+   
+   bp = save;
+   for (i=0; i<count; i++, bp++) {
+      const unsigned addr = (unsigned) bp;
+      const ui32 ev = ((addr>>5)&1 ? 0xffffffff : 0)&0xffff;
+      if ( *bp != ev) {
+	 printf("FAILURE: offset %d: expected: %08x, got: %08x\r\n",
+		i, ev, *bp);
+	 err = ERROR;
+      }
+   }
+
+   return err;
+}
+

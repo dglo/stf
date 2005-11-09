@@ -3,7 +3,7 @@
 <stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
   <name>pmt_hv_stability</name>
   <description>PMT HV Stability Test</description>
-  <version major="1" minor="0"/>
+  <version major="1" minor="1"/>
 
   <inputParameter>
     <description>HV set level (V)</description>
@@ -20,7 +20,7 @@
   <inputParameter>
     <description>Sample interval (milliseconds)</description>
     <name>sample_time_ms</name>
-    <unsignedInt default="1000" maxValue="5000" minValue="10"/>
+    <unsignedInt default="1000" maxValue="10000" minValue="10"/>
   </inputParameter>
 
   <inputParameter>
@@ -28,6 +28,12 @@
     <name>init_wait_sec</name>
     <unsignedInt default="15" maxValue="600" minValue="0"/>
   </inputParameter>
+
+  <outputParameter>
+    <description>HV Board ID</description>
+    <name>hv_id</name>
+    <string/>
+  </outputParameter>
   
   <outputParameter>
     <description>HV Read Level Mean (mV)</description>

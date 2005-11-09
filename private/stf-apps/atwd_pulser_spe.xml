@@ -89,7 +89,7 @@
   <outputParameter>
     <description>Waveform of baseline in ATWD counts units</description>
     <name>atwd_baseline_waveform</name>
-    <unsignedIntArray length="128"/>
+    <unsignedInt/>
   </outputParameter>
 
   <outputParameter>
@@ -101,6 +101,12 @@
   <outputParameter>
     <description>Amplitude of the ATWD waveform</description>
     <name>atwd_waveform_amplitude</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>Pulse peak position in ATWD samples units</description>
+    <name>atwd_waveform_position</name>
     <unsignedInt/>
   </outputParameter>
 

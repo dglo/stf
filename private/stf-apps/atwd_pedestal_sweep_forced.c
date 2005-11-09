@@ -24,6 +24,7 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
                     unsigned atwd_ch0_clamp,
                     unsigned atwd_chip_a_or_b,
                     unsigned atwd_channel,
+                    unsigned full_range_mv,
                     unsigned *half_range_counts_per_volt,
                     unsigned *full_range_counts_per_volt,
                     unsigned *linearity_pedestal_percent,
@@ -48,7 +49,7 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
    /* FIXME: clamp? */
 
    /* pretest 2) hv is off */
-   halDisablePMT_HV();
+   halPowerDownBase();
 
    /* clear atwd */
    prescanATWD(trigger_mask);
@@ -59,6 +60,7 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
       unsigned sum = 0;
 
       /* 1) set pedestal dac */
+      halWriteDAC(DOM_HAL_DAC_PMT_FE_PEDESTAL, i);
       
       /* 2) take a waveform with forced cpu... */
       hal_FPGA_TEST_trigger_forced(trigger_mask);
@@ -73,7 +75,7 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
       for (j=0; j<128; j++) sum+=buffer[j];
 
       /* add to array... */
-      atwd_pedestal_sweep_forced[i] = sum;
+      atwd_pedestal_sweep_forced[i] = sum/128;
    }
 
    free(buffer);
@@ -84,15 +86,16 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
    nominal_mvolts = (int)(atwd_pedestal_dac*5000.0/4096.0);
 
    if (atwd_ch0_clamp==0) {
-      const int idx = (int)(atwd_pedestal_dac - 750.0*4096.0/5000.0);
-      const int fidx = (int)(atwd_pedestal_dac - 1500.0*4096.0/5000.0);
+      const int idx = 
+	 (int)(atwd_pedestal_dac - (full_range_mv/2.0)*4096.0/5000.0);
+      const int fidx = (int)(atwd_pedestal_dac - full_range_mv*4096.0/5000.0);
       
       pedestal_half_range = 
 	 atwd_pedestal_sweep_forced[idx];
       half_range_mvolts = (int) (idx * 5000.0/4096.0);
 
       pedestal_full_range = 
-	 atwd_pedestal_sweep_forced[idx];
+	 atwd_pedestal_sweep_forced[fidx];
       full_range_mvolts = (int) (fidx * 5000.0/4096.0);
    }
    else {
@@ -125,15 +128,17 @@ BOOLEAN atwd_pedestal_sweep_forcedEntry(STF_DESCRIPTOR *d,
     */
    *linearity_pedestal_percent = 
       (int)(100.0*
-	    *half_range_counts_per_volt /
-	    *full_range_counts_per_volt);
+	    (*half_range_counts_per_volt) /
+	    (*full_range_counts_per_volt) );
 
    return 
       *full_range_counts_per_volt > 400 &&
       *full_range_counts_per_volt < 700 &&
-      *linearity_pedestal_percent > 95 &&
-      *linearity_pedestal_percent > 105; 
+      *linearity_pedestal_percent > 90 &&
+      *linearity_pedestal_percent < 110; 
 }
+
+
 
 
 

@@ -6,6 +6,7 @@
 
 #include "stf/stf.h"
 #include "stf-apps/temperature.h"
+#include "hal/DOM_MB_pld.h"
 
 BOOLEAN temperatureInit(STF_DESCRIPTOR *d) {
    return TRUE;
@@ -30,4 +31,5 @@ BOOLEAN temperatureEntry(STF_DESCRIPTOR *d,
                     unsigned *temp) {
 
   *temp= (formatTemp(readTemp())+273.0)*1000.0;
+  return TRUE;
 }

@@ -98,7 +98,7 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
                     unsigned *atwd_sampling_speed_dac_300MHz,
                     unsigned *atwd_clock1x_waveform) {
    int i;
-   const int ch = 3;
+   const int ch = (atwd_chip_a_or_b) ? 0 : 4;
    const int cnt = 128;
    unsigned *waveform = (unsigned *) calloc(cnt, sizeof(unsigned));
    int trigger_mask = (atwd_chip_a_or_b) ? 
@@ -117,9 +117,12 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    /* 2) select clock1x on analog_mux...
     */
-   halSelectAnalogMuxInput(DOM_HAL_MUX_OSC_OUTPUT);
 
    prescanATWD(trigger_mask);
+   
+   halSelectAnalogMuxInput(DOM_HAL_MUX_OSC_OUTPUT);
+
+   halUSleep(100);
    
    /* test algorithm... */
    getSummedWaveform(loop_count, trigger_mask, 3, atwd_clock1x_waveform);
@@ -175,7 +178,7 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    return 
       *atwd_clock1x_amplitude >= 250 &&
-      *atwd_clock1x_amplitude <= 500 &&
+      *atwd_clock1x_amplitude <= 800 &&
       *atwd_sampling_speed_MHz <= 350 &&
       *atwd_sampling_speed_MHz >= 250 &&
       *atwd_sampling_speed_dac_300MHz < 4095;

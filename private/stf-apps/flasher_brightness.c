@@ -6,10 +6,10 @@
  *   capturing their current waveforms with ATWD
  *   channel 3.
  *
- * - The present pass/fail scheme compares the 
- *   pulse amplitude to a reference.  This will be
- *   refined to include pulse width measurements as well.
- *
+ * - Fits the relationship between amplitude setting and
+ *   pulse height in ATWD units, checks for linearity within
+ *   a certain percentage, and also checks the maximum
+ *   amplitude compared to a nominal value.
  */
 
 #include <stdio.h>
@@ -20,19 +20,6 @@
 #include "stf/stf.h"
 #include "hal/DOM_MB_hal.h"
 #include "stf-apps/atwdUtils.h"
-
-/* ATWD DAC settings */
-#define ATWD_SAMPLING_SPEED_DAC 850
-#define ATWD_RAMP_TOP_DAC       2097
-#define ATWD_RAMP_BIAS_DAC      2800 /* Non-standard! */
-#define ATWD_ANALOG_REF_DAC     2048
-#define ATWD_PEDESTAL_DAC       1925
-
-/* Offset for current measurement */
-#define ATWD_FLASHER_REF         450
-
-/* ATWD-LED trigger offset delay */
-#define ATWD_LED_DELAY            4
 
 /* Number of pedestals to average */
 #define PEDESTAL_TRIG_CNT        100
@@ -48,11 +35,16 @@
 
 /* Pass/fail defines */
 /* Maximum allowed deviation of each point from linear fit */
-#define MAX_ERR_PCT                5
+#define MAX_ERR_PCT               10
 
 /* Minimum current peak in ATWD units at maximum brightness */
-/* About 90% of nominal value of 400 */
-#define MIN_PEAK_MAX_BRIGHT      360 
+/* Nominal value is ~440, but decreases at cold temps */
+#define MIN_PEAK_MAX_BRIGHT      300
+
+/* Minimum slope of linear brightness relationship */
+/* Very loose condition -- nominal slope is 3.0 */
+/* Used to catch stuck-at failures */
+#define MIN_SLOPE                1.0
 
 /* Rounding convert to int */
 #define round(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
@@ -93,15 +85,28 @@ void linearFitInt(int *x, int *y, int pts, float *m, float *b, float *rsqr) {
 BOOLEAN flasher_brightnessInit(STF_DESCRIPTOR *desc) { return TRUE; }
 
 BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
+                                unsigned int atwd_sampling_speed_dac,
+                                unsigned int atwd_ramp_top_dac,
+                                unsigned int atwd_ramp_bias_dac,
+                                unsigned int atwd_analog_ref_dac,
+                                unsigned int atwd_pedestal_dac,
+                                unsigned int atwd_flasher_ref,
+                                unsigned int atwd_led_delay,
                                 unsigned int atwd_chip_a_or_b,
-                                unsigned int flasher_width,
+                                unsigned int flasher_pulse_width,
                                 unsigned int led_trig_cnt,
                                 char ** flasher_id,
+                                unsigned int * config_time_us,
+                                unsigned int * valid_time_us,
+                                unsigned int * reset_time_us,
                                 unsigned int * max_current_err_pct,
                                 unsigned int * worst_linearity_brightness,
                                 unsigned int * worst_linearity_led,
                                 unsigned int * min_peak_brightness_atwd,
                                 unsigned int * worst_brightness_led,
+                                unsigned int * min_slope_x_100,
+                                unsigned int * min_slope_led,
+                                unsigned int * failing_led_cnt,
                                 unsigned int * led_avg_current
                              ) {
 
@@ -114,6 +119,12 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     /* Default return values */
     *worst_linearity_led = *worst_linearity_brightness = *max_current_err_pct = 0;
     *min_peak_brightness_atwd = *worst_brightness_led = 0;
+    *config_time_us = *reset_time_us = *valid_time_us = 0;
+    *min_slope_x_100 = *min_slope_led = 0;
+    *failing_led_cnt = 0;
+
+    static char dummy_id[9] = "deadbeef";
+    *flasher_id = dummy_id;
 
     /* Pedestal buffers -- only use channel 3 in this test */
     int *atwd_pedestal[4] = {NULL,
@@ -135,6 +146,11 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
             return FALSE;
     }
 
+    /* Per-LED fails */
+    int led_fail[N_LEDS];
+    for (i = 0; i < N_LEDS; i++) 
+        led_fail[i] = 0;
+
     /* Peaks in current wavesforms */
     int peaks[N_BRIGHTS];
     int widths[N_BRIGHTS];
@@ -147,14 +163,23 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     /* Make sure PMT is off */
     halPowerDownBase();
 
-    /* Initialize the flasherboard and power up */
-    hal_FB_enable();
+    /* Initialize the flaherboard and power up */
+    /* Record configuration and clock validation times */
+    int err = hal_FB_enable(config_time_us, valid_time_us, reset_time_us, DOM_FPGA_TEST);
+    if (err != 0) {
+#ifdef VERBOSE
+        printf("Flasher board enable failure (%d)!  Aborting test!\r\n", err);
+#endif
+        return FALSE;
+    }
+
+    /* Read the flasher board firmware version */
+    #ifdef VERBOSE
+    printf("Flasher board FW version = %d\r\n", hal_FB_get_fw_version());
+    #endif
 
     /* Read the flasherboard ID */
-    /* Not malloc'ed by STF */
-    static char id[20];    
-    strcpy(id, hal_FB_get_serial());
-    *flasher_id = id;
+    hal_FB_get_serial(flasher_id);
 
     #ifdef VERBOSE
     printf("Flasher board ID = %s\n", *flasher_id);
@@ -164,15 +189,15 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     /* Record an average pedestal for this ATWD */
 
     /* Set up the ATWD DAC values */
-    halWriteDAC(ch, ATWD_SAMPLING_SPEED_DAC);
-    halWriteDAC(ch+1, ATWD_RAMP_TOP_DAC);
-    halWriteDAC(ch+2, ATWD_RAMP_BIAS_DAC);
-    halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF, ATWD_ANALOG_REF_DAC);
-    halWriteDAC(DOM_HAL_DAC_PMT_FE_PEDESTAL, ATWD_PEDESTAL_DAC);   
-    halWriteDAC(DOM_HAL_DAC_FL_REF, ATWD_FLASHER_REF);
+    halWriteDAC(ch, atwd_sampling_speed_dac);
+    halWriteDAC(ch+1, atwd_ramp_top_dac);
+    halWriteDAC(ch+2, atwd_ramp_bias_dac);
+    halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF, atwd_analog_ref_dac);
+    halWriteDAC(DOM_HAL_DAC_PMT_FE_PEDESTAL, atwd_pedestal_dac);   
+    halWriteDAC(DOM_HAL_DAC_FL_REF, atwd_flasher_ref);
 
     /* Set the trigger offset delay */
-    hal_FPGA_TEST_set_atwd_LED_delay(ATWD_LED_DELAY);
+    hal_FPGA_TEST_set_atwd_LED_delay(atwd_led_delay);
 
     /* Select the LED current as the ATWD analog mux input */
     halSelectAnalogMuxInput(DOM_HAL_MUX_FLASHER_LED_CURRENT);
@@ -192,6 +217,9 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
 
         /* CPU-trigger the ATWD */
         hal_FPGA_TEST_trigger_forced(trigger_mask);
+
+        /* Wait for done */
+        while (!hal_FPGA_TEST_readout_done(trigger_mask));
         
         /* Read out one waveform for channel 3 */        
         hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], channels[3], 
@@ -219,10 +247,10 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     int err_pct;
 
     #ifdef VERBOSE
-    printf("Setting pulse width to %d\n", flasher_width);
+    printf("Setting pulse width to %d\n", flasher_pulse_width);
     #endif
 
-    hal_FB_set_pulse_width(flasher_width);
+    hal_FB_set_pulse_width(flasher_pulse_width);
 
     for (led = 0; led < N_LEDS; led++) {
                 
@@ -264,7 +292,10 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                 
                 /* LED-trigger the ATWD */
                 hal_FPGA_TEST_trigger_LED(trigger_mask);
-                
+
+                /* Wait for done */
+                while (!hal_FPGA_TEST_readout_done(trigger_mask));                
+
                 /* Read out one waveform of channel 3 */
                 hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], channels[3], 
                                       channels[0], channels[1], channels[2], channels[3],
@@ -347,7 +378,11 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
             pred = slope*brights[i] + intercept;
             err_pct = abs(round(((pred - peaks[i]) * 100.0 / pred)));
             
-            /* Record worst error */
+            /* Check linearity error for pass/fail */
+            if (err_pct > MAX_ERR_PCT)
+                led_fail[led] = 1;
+
+            /* Record worst linearity error */
             if (err_pct > *max_current_err_pct) {                
                 *max_current_err_pct = err_pct;
                 *worst_linearity_led = led+1;
@@ -357,21 +392,33 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                        led+1,*max_current_err_pct,*worst_linearity_brightness);
                 #endif
             }
-        }
+        }      
+
+        /* Check minimum brightness for pass/fail */
+        if (peaks[N_BRIGHTS-1] < MIN_PEAK_MAX_BRIGHT)
+            led_fail[led] = 1;
 
         /* Record minimum brightness at peak setting */
-        if (*min_peak_brightness_atwd == 0) {
+        if ((led == 0) || ((peaks[N_BRIGHTS-1] < *min_peak_brightness_atwd))) {
             *min_peak_brightness_atwd = peaks[N_BRIGHTS-1];
+            *worst_brightness_led = led+1;
+            #ifdef VERBOSE
+            printf("New minimum peak brightness, LED %d: %d\n",
+                   led+1, *min_peak_brightness_atwd);
+            #endif
         }
-        else {
-            if (peaks[N_BRIGHTS-1] < *min_peak_brightness_atwd) {
-                *min_peak_brightness_atwd = peaks[N_BRIGHTS-1];
-                *worst_brightness_led = led+1;
-                #ifdef VERBOSE
-                printf("New minimum peak brightness, LED %d: %d\n",
-                       led+1, *min_peak_brightness_atwd);
-                #endif
-            }
+
+        /* Check slope for pass fail */
+        if (slope < MIN_SLOPE)
+            led_fail[led] = 1;
+
+        /* Keep track of minimum slope */
+        if ((led == 0) || ((int)(slope*100) < *min_slope_x_100)) {
+            *min_slope_x_100 = (int)(slope*100);
+            *min_slope_led   = led+1;
+            #ifdef VERBOSE
+            printf("New minimum slope, LED %d: slope of %g\n", led+1, slope);
+            #endif
         }
 
     } /* End LED loop */        
@@ -400,12 +447,15 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     #endif
 
     /* Check pass/fail conditions */
+    /* Individual conditions checked above; just OR all the per-LED fails here */
     BOOLEAN passed = TRUE;
-
-    passed  = (*max_current_err_pct > MAX_ERR_PCT) ? FALSE : TRUE;
-    passed &= (*min_peak_brightness_atwd > MIN_PEAK_MAX_BRIGHT);
-
-    /* TO DO: Add minimum slope/intercept check? */
+    for (led = 0; led < N_LEDS; led++) {
+        *failing_led_cnt += led_fail[led];
+#ifdef VERBOSE
+        printf("LED %d: %s\r\n", (led+1), led_fail[led] ? "failed" : "passed");
+#endif
+        passed &= (led_fail[led] == 0);
+    }
 
     /* Free allocated structures */
     free(atwd_pedestal[3]);

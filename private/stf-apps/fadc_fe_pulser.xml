@@ -4,7 +4,7 @@
   <name>fadc_fe_pulser</name>
   <description>Test the STF FADC FE PULSER</description>
   <version major="1" minor="0"/>
-    <fpgaDependencies>
+<!--    <fpgaDependencies>
         <COM_FIFO/>
         <DAQ/>
         <PULSERS/>
@@ -14,8 +14,7 @@
         <TRIGGER/>
         <LOCAL_CLOCK/>
         <SUPERNOVA/>
-        <!-- <ALL/> would work too -->
-    </fpgaDependencies>
+    </fpgaDependencies>  -->
   <inputParameter>
     <description>10 bit DAC setting for FADC reference voltage</description>
     <name>fadc_reference_dac</name>
@@ -37,14 +36,9 @@
   <inputParameter>
     <description>Number of waveforms to take and average over before analysis.</description>
     <name>loop_count</name>
-    <unsignedLong default="" minValue="0" maxValue="1000000"/>
+    <unsignedLong default="100" minValue="0" maxValue="1000000"/>
   </inputParameter>
 
-  <inputParameter>
-    <description>Fill the auput array with waveform.True=do-not-fill, False=fill-array.</description>
-    <name>fill_output_arrays</name>
-    <boolean default="True"/>
-  </inputParameter>
 
   <outputParameter>
     <description>First value of the SPE DAC that was above noise(of 10bit)if no trigger point then use last tried point</description>

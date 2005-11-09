@@ -48,6 +48,7 @@ stfmode > /tmp/dhtab.$$
 
 ndoms=`wc -l /tmp/dhtab.$$ | awk '{print $1; }'`
 ntests=`echo ${testnames} | wc -w`
+ntests=`printf "%d" ${ntests}`
 
 #
 #
@@ -59,19 +60,34 @@ echo "<title>Run all tests</title>"
 echo "</head>"
 echo "<body>"
 
-echo "<h2>ntests: ${ntests}</h2>"
-
 #
 # setup the table
 #
 echo "<table><tbody>"
-echo "<tr> <th>Card</th> <th>Channel</th> <th>DOM</th>";
-for (( i=1; i <= ${ntests} ; i++ )); do
-    echo "<th>${i}</th>"
+echo "<tr> <th>Card</th> <th>Ch</th> <th>DOM</th> <th>Sel</th>"
+i=1
+for f in ${testnames}; do
+    fullqxml=${xmlpath}/std-tests/$f
+    testname=`cat ${fullqxml} | xmlv | \
+	awk '/^\(/ { depth++; if (depth==2) print substr($0, 2); } '`
+    echo "<th><a href=\"/cgi-bin/stf/conf-test?testname=${testname}\">${i}</a></th>"
+    i=`expr ${i} + 1`
 done
-echo "</tr>";
+echo "</tr>"
+
+#
+# get current picks from cookie or set default (first
+# in servers file...
+#
+qstfserver=`currentServer`
+qstfport=`currentPort`
+
+session=`mk-name`
+mkdir ${xmlpath}/std-results/${session}
 
 for (( i=1; i<=${ndoms}; i++ )); do
+    respath=`printf "%s/%04d" ${xmlpath}/std-results/${session} $i`
+    mkdir ${respath}
     dhline=`sed -n "${i}p" /tmp/dhtab.$$`
     stfserver=`echo ${dhline} | awk '{print $1;}'`
     stfport=`echo ${dhline} | awk '{print $2;}'`
@@ -80,19 +96,26 @@ for (( i=1; i<=${ndoms}; i++ )); do
     echo "<td>" `echo ${dhline} | awk '{print $3;}'` "</td>"
     echo "<td>" `echo ${dhline} | awk '{print $4;}'` "</td>"
     echo "<td>" `echo ${dhline} | awk '{print $5;}'` "</td>"
+    echo "<td>"
+    if [[ ${qstfserver} == ${stfserver} && ${qstfport} == ${stfport} ]]; then
+	echo "*"
+    else
+	echo " "
+    fi
+    echo "</td>"
 
     for f in ${testnames}; do
 	fullqxml=${xmlpath}/std-tests/$f
-	fullrxml=${xmlpath}/std-results/$f
+	fullrxml=${respath}/$f
 
-	testname=`xmlv ${fullqxml} | \
-	    awk '/^\(/ { depth++; if (depth==2) print substr($0, 2); } '`
-	    
+	testname=`cat ${fullqxml} | xmlv | \
+	    awk '/^\(/ { depth++; if (depth==2) print substr($0, 2); }'`
+	   
 	touch ${xmlpath}/${stfserver}:${stfport}
 	chkpt 100 \
 	    stftcp ${stfserver} `expr ${stfport} + 3000` \
 		-send ${fullqxml} -go ${testname} \
-		-rcv ${testname} ${fullrxml} >& /dev/null
+		-rcv ${testname} ${fullrxml} >& /tmp/stf.out
 	rm -f ${xmlpath}/${stfserver}:${stfport}
 
 	if [[ ! -e ${fullrxml} ]]; then
@@ -101,28 +124,27 @@ for (( i=1; i<=${ndoms}; i++ )); do
 	    echo "<pre>"
 	    cat /tmp/stf.out
 	    echo "</pre>"
+	    rm /tmp/stf.out
 	    exit 0
 	fi
+
+	rm -f /tmp/stf.out
 
 	#
 	# add results to db...
 	#
-	resid=`${javacmd} \
-		addresults -resultid -technician arthur ${fullrxml} | \
-	    egrep '^resultid	' | awk '{print $2;}'`
+	resid=`addResults ${fullrxml}`
 
 	#
 	# find out if we passed...
 	#
-	cgiurl="http://deimos.lbl.gov/cgi-bin/stf"
+	cgiurl="/cgi-bin/stf"
 	echo "<td><a href=\"${cgiurl}/view-results?file=${resid}\">"
 	
-	restt=/usr/lib/cgi-bin/stf/xml/bin/restotab.awk
-	torf=`xmlv ${fullrxml} | awk -f ${restt} | \
-	    egrep "^${testname}	passed	" | \
-	    awk -F "\t" '{ print $3; }'`
+	qry="select passed from STFResult where stf_result_id=${resid};"
+	torf=`${mysqlcmd} "${qry}"`
 
-	if [[ ${torf} = "true" ]]; then
+	if [[ ${torf} = "1" ]]; then
 	    echo "P"
 	else
 	    echo "F"
@@ -133,12 +155,14 @@ for (( i=1; i<=${ndoms}; i++ )); do
     echo "</tr>"
 done
 
-echo "</tbody>";
-echo "</table>";
-echo "</body>";
-echo "</html>";
+echo "</tbody>"
+echo "</table>"
+echo "</body>"
+echo "</html>"
 
 rm -f /tmp/dhtab.$$
+
+
 
 
 

@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
 	    fprintf(fptr, "<h2>Configure and Run %s Test</h2>\n", tn);
 	    fprintf(fptr,
 		    "<form action="
-		    "\"http://icecube-1.lbl.gov/cgi-bin/run-test\""
+		    "\"http://deimos.lbl.gov/cgi-bin/stf/run-test\""
                     " method=\"get\">\n");
 	    fprintf(fptr, "<table border=\"1\">\n  <tbody>\n");
 	    fprintf(fptr, 
@@ -153,10 +153,10 @@ int main(int argc, char *argv[]) {
       }
       fprintf(fptr, "  </tbody>\n</table>\n");
       fprintf(fptr, 
-	      "<button name=\"test\" value=\"%s\" type=\"submit\">"
-	      "Run Test"
+	      "<button name=\"test\" value=\"Run %s\" type=\"submit\">"
+	      "Run %s"
 	      "</button>\n",
-	      tn);
+	      tn, tn);
       fprintf(fptr, "</body>\n</html>\n");
       fclose(fptr);
       
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "can't open run-tests.html\n");
       return 1;
    }
-   
+
    fprintf(fptr, "<html>\n<head>\n  <title>Run STF tests</title>\n</head>\n");
    fprintf(fptr, "<body>\n");
    fprintf(fptr, "<h2>Configure and run an STF test</h2>\n");
@@ -183,6 +183,6 @@ int main(int argc, char *argv[]) {
    fprintf(fptr, "</ul>\n");
    fprintf(fptr, "</body>\n</html>\n");
    fclose(fptr);
-   
+
    return 0;
 }

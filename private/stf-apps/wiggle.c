@@ -13,17 +13,20 @@
 int main(void) {
    int j;
    
-   for (j=0; j<10; j++) {
-      int rand = 0;
+   for (j=0; j<30; j++) {
+      unsigned rand = 0;
       int i;
       
-      for (i=0; i<750 * 1000; i++) {
-         char v;
+      for (i=0; i< 750 * 150; i++) {
+         /* FIXME: shouldn't this be ~50? */
+         const unsigned ns = 3 * (rand&0xf);
+
+         hal_FPGA_TEST_comm_bit_bang_dac(0xff);
+         halNanoSleep(ns);
+         hal_FPGA_TEST_comm_bit_bang_dac(0);
+         halNanoSleep(ns);
          rand = rand*69069 + 1;
-         halUSleep(1);
-         hal_FPGA_TEST_comm_bit_bang_dac( (rand&0xff)>>WIGGLE_SHIFT );
       }
-      halUSleep(1);
       hal_FPGA_TEST_comm_bit_bang_dac(128);
       halUSleep(100*1000);
    }

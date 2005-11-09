@@ -1,10 +1,10 @@
-/* atwd_pulser_spe.c, skeleton file created by George
+/* atwd_pmt_spe.c, skeleton file created by George
  */
 #include <stdlib.h>
 #include <math.h>
 
 #include "stf/stf.h"
-#include "stf-apps/atwd_pulser_spe.h"
+#include "stf-apps/atwd_pmt_spe.h"
 
 #include "hal/DOM_MB_hal.h"
 #include "hal/DOM_MB_fpga.h"
@@ -45,7 +45,7 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
    int *sum_waveform = (int *) calloc(128, sizeof(int));
    int trigger_mask = (atwd_chip_a_or_b) ? 
       HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
-   int spe_dac_nominal, pmt_dac;
+   int pmt_dac, use_pulser=0;
 
    /* pretest 1) all five atwd dac settings are programmed... */
    halWriteDAC(ch, atwd_sampling_speed_dac);
@@ -64,7 +64,7 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
     halWriteActiveBaseDAC(pmt_hv_low_volt*2); /* for pmt, input_dac=input_volt*2 */
    
    /* pretest 4) turn on pmt */
-   if (pmt_scanSPE(atwd_pedestal_dac, triggerable_spe_dac)) {
+   if (scanSPE(atwd_pedestal_dac, triggerable_spe_dac, use_pulser)) {
       /* no triggerable value found... */
       free(buffer);
       return FALSE;
@@ -96,10 +96,10 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
    pmt_dac = pmt_hv_high_volt*2;
    halEnableBaseHV();
    halWriteActiveBaseDAC(pmt_dac);
-   *real_hv_output = (halReadBaseDAC()/2); 
 
    /* wait for dacs, et al... */
-   halUSleep(1000*100);
+   halUSleep(1000*2000);
+   *real_hv_output = halReadBaseADC()/2; 
 
    /* 3) take loop_count waveforms...
     */
@@ -136,6 +136,7 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
    }
    
    free(sum_waveform);
+   halPowerDownBase();
 
    /* 8) reverse waveform */
    reverseATWDIntWaveform(atwd_waveform_pmt_spe);
@@ -146,10 +147,10 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
        int half_max, hmxIdx = 127, hmnIdx = 0;
        
        for (i=1; i<128; i++) {
-	  if (maxValue < atwd_waveform_pmt_spe[i]) {
-	     maxIdx = i;
-	     maxValue = atwd_waveform_pmt_spe[i];
-	  }
+	 if (maxValue < atwd_waveform_pmt_spe[i]) {
+	   maxIdx = i;
+	   maxValue = atwd_waveform_pmt_spe[i];
+	 }
        }
 
        /* 10) */
@@ -160,16 +161,16 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
 	  (*atwd_waveform_amplitude)/2 + *atwd_baseline_waveform;
 
        for (i=maxIdx; i<cnt; i++) {
-	  if (atwd_waveform_pmt_spe[i]<half_max) {
-	     hmxIdx = i;
-	     break;
-	  }
+	 if (atwd_waveform_pmt_spe[i]<half_max) {
+	   hmxIdx = i;
+	   break;
+	 }
        }
        for (i=maxIdx; i>=0; i--) {
-	  if (atwd_waveform_pmt_spe[i]<half_max) {
-	     hmnIdx = i;
-	     break;
-	  }
+	 if (atwd_waveform_pmt_spe[i]<half_max) {
+	   hmnIdx = i;
+	   break;
+	 }
        }
 
        /* 14 */
@@ -184,18 +185,9 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
    free(buffer);
 
    return 
-      *atwd_waveform_position > 2 &&
-      *atwd_waveform_position < 10 &&
-      *atwd_waveform_width > 2 &&
-      *atwd_waveform_width < 6;
+      *atwd_waveform_position >= 6 &&
+      *atwd_waveform_position <= 11 &&
+      *atwd_waveform_amplitude > 15 &&
+      *real_hv_output > 0.95*pmt_hv_high_volt &&
+      *real_hv_output < 1.05*pmt_hv_high_volt;
 }
-
-
-
-
-
-
-
-
-
-

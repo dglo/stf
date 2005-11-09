@@ -6,24 +6,23 @@
  * This test sets the PMT high voltage to a particular level 
  * and then simply monitors it for a given time.  The return
  * parameters include the mean, max, min, and rms of the collected
- * values.
+ * values.  Pass/fail criteria include a maximum allowed rms, and
+ * a largest allowed |set-mean|, |mean-min|, and |mean-max|.
  *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include "stf/stf.h"
 #include "hal/DOM_MB_hal.h"
 
-/* Lots of information on stdout; for use with menu.c */
-#define VERBOSE
-
 /* PASS/FAIL criteria */
-#define HV_MAX_RMS_MVOLT      800  /* Maximum RMS, in millivolts */
-#define HV_MEAN_ERR_MVOLT    1000  /* Maximum difference of the mean from the set value, mV */
-#define HV_MAX_MIN_ERR_MVOLT 2000  /* Maximum difference of min/max values from set value, mV */
+#define HV_MAX_RMS_MVOLT      1000  /* Maximum RMS, in millivolts */
+#define HV_MEAN_ERR_MVOLT    15000  /* Maximum difference of the mean from the set value, mV */
+#define HV_MAX_MIN_ERR_MVOLT 15000  /* Maximum difference of min/max values from the mean, mV */
 
 BOOLEAN pmt_hv_stabilityInit(STF_DESCRIPTOR *desc) { return TRUE; }
 
@@ -32,6 +31,7 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
                               unsigned int run_time_sec,
                               unsigned int sample_time_ms,
                               unsigned int init_wait_sec,
+                              char **hv_id,
                               unsigned int* hv_read_mean_mvolt,
                               unsigned int* hv_read_min_mvolt,
                               unsigned int* hv_read_max_mvolt,
@@ -48,7 +48,7 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
     unsigned int *sample_arr;
 
     /* Start with the PMT HV disabled */
-    halDisablePMT_HV();
+    halPowerDownBase();
 
     #ifdef VERBOSE
     printf("DEBUG: Enabling PMT at %d V\r\n", hv_set_volt);
@@ -56,8 +56,15 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
 
     /* Enable the HV and set the level (in that order) */
     /* DAC value is 2xVoltage */
-    halEnablePMT_HV();
+    halPowerUpBase();
+    halEnableBaseHV();
     halWriteActiveBaseDAC(hv_set_volt * 2);
+
+    /* Read the HV base ID */
+    *hv_id = (char *) halHVSerial();
+    #ifdef VERBOSE
+    printf("DEBUG: HV ID is %s\r\n", *hv_id);
+    #endif
 
     /* If requested, wait a while before starting data collection */
     /* halUSleep() doesn't seem to like really large values (not sure */
@@ -107,9 +114,9 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
         mean_level  += (float)hv_read_level / sample_cnt;
     }
 
-    /* Calculate the RMS */
+    /* Calculate the RMS (standard deviation) */
     for (i = 0; i < sample_cnt; i++) {
-        rms += (sample_arr[i] - mean_level) * (sample_arr[i] - mean_level) / sample_cnt;
+        rms += (sample_arr[i] - mean_level) * (sample_arr[i] - mean_level) / (sample_cnt-1);
     }
     rms = sqrt(rms);
 
@@ -124,17 +131,17 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
     *hv_read_rms_mvolt  = (int)(rms * 1000 / 2);
 
     /* Turn the HV off */
-    halDisablePMT_HV();
+    halPowerDownBase();
 
     /* Check for failure */
     if (*hv_read_rms_mvolt > HV_MAX_RMS_MVOLT) 
         return FALSE;
     
-    if (abs(*hv_read_mean_mvolt - hv_set_volt) > HV_MEAN_ERR_MVOLT)
+    if (abs(*hv_read_mean_mvolt - hv_set_volt*1000) > HV_MEAN_ERR_MVOLT)
         return FALSE;
 
-    if ((abs(*hv_read_max_mvolt - hv_set_volt) > HV_MAX_MIN_ERR_MVOLT) ||
-        (abs(*hv_read_min_mvolt - hv_set_volt) > HV_MAX_MIN_ERR_MVOLT))
+    if ((abs(*hv_read_max_mvolt - *hv_read_mean_mvolt) > HV_MAX_MIN_ERR_MVOLT) ||
+        (abs(*hv_read_min_mvolt - *hv_read_mean_mvolt) > HV_MAX_MIN_ERR_MVOLT))
         return FALSE;
                                                                           
     return TRUE;

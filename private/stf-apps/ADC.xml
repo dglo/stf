@@ -4,58 +4,29 @@
   <description>ADC Tests</description>
   <version major="1" minor="0"/>
   <inputParameter>
-    <name>adc_chip</name>
-    <unsignedInt default="0" maxValue="0" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
-    <name>adc_channel</name>
-    <unsignedInt default="0" maxValue="7" minValue="0"/>
-  </inputParameter>
-
-  <inputParameter>
+    <description>Number of ADC values to acquire to compute a mean and spread</description>
     <name>loop_count</name>
     <unsignedInt default="1000" maxValue="1000000" minValue="1"/>
   </inputParameter>
 
   <outputParameter>
-    <name>adc_mean_counts</name>
-    <unsignedInt/>
+    <description>Mean of the ADC values distribution in count units</description>
+    <name>adc_value</name>
+    <unsignedIntArray length="24" />
   </outputParameter>
 
   <outputParameter>
-    <name>adc_rms_counts</name>
-    <unsignedInt/>
-  </outputParameter>
-
-  <outputParameter>
-    <name>adc_max_counts</name>
-    <unsignedInt/>
-  </outputParameter>
-
-  <outputParameter>
-    <name>adc_min_counts</name>
-    <unsignedInt/>
-  </outputParameter>
-
-  <outputParameter>
-    <name>adc_mean_mvolt_or_mamp</name>
-    <unsignedInt/>
-  </outputParameter>
-
-  <outputParameter>
-    <name>adc_rms_mvolt_or_mamp</name>
-    <unsignedInt/>
-  </outputParameter>
-
-  <outputParameter>
-    <name>adc_max_mvolt_or_mamp</name>
-    <unsignedInt/>
-  </outputParameter>
-
-  <outputParameter>
-    <name>adc_min_mvolt_or_mamp</name>
-    <unsignedInt/>
+    <description>Pass or Fail the test</description>
+    <name>pass_or_fail</name>
+    <unsignedIntArray length="24" />
   </outputParameter>
 
 </stf:test>
+
+
+
+
+
+
+
+

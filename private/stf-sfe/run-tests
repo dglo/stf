@@ -10,3 +10,5 @@ echo
 
 ${mysqlcmd} 'select name from STFTestType;' | \
 	awk -f ${awkpath}/run-tests.awk
+
+

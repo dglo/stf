@@ -43,7 +43,7 @@
   <inputParameter>
     <description>Number of waveforms to collect and average</description>
     <name>loop_count</name>
-    <unsignedInt default="1000" minValue="0" maxValue="1000000"/>
+    <unsignedInt default="1" minValue="0" maxValue="1000000"/>
   </inputParameter>
 
   <outputParameter>
@@ -85,7 +85,7 @@
   <outputParameter>
     <description>The summed discriminator scan waveform</description>
     <name>disc_sum_waveform</name>
-    <unsignedIntArray length="4096"/>
+    <unsignedIntArray length="1024"/>
   </outputParameter>
 
 </stf:test>

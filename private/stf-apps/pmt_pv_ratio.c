@@ -96,10 +96,6 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
     int   *atwd_pedestal = (int *) malloc(cnt*sizeof(int));
     short *channels[4] = { NULL, NULL, NULL, NULL };
     short *maxima = (short *) calloc(pv_trig_cnt, sizeof(short));
-    
-    #ifdef VERBOSE
-    printf("DEBUG: Disabling PMT HV\r\n");
-    #endif
 
     /*---------------------------------------------------------------------------------*/
 
@@ -117,7 +113,8 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
 
     /* Start with the PMT HV on, but set at a very low voltage */
     /* Pedestal measurements perhaps shift with HV off/on */
-    halEnablePMT_HV();
+    halPowerUpBase();
+    halEnableBaseHV();
     halWriteActiveBaseDAC(HV_START_VOLT * 2);
 
     /* Sleep a bit (5s) */
@@ -131,12 +128,19 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
     printf("DEBUG: Taking pedestal patterns...\r\n");
     #endif
 
+    /* Initialize the atwd_pedestal array */
+    for(j=0; j<cnt; j++)
+        atwd_pedestal[j] = 0;
+
     prescanATWD(trigger_mask);
     
     for (i=0; i<(int)PEDESTAL_TRIG_CNT; i++) {
 
         /* CPU-trigger the ATWD */
         hal_FPGA_TEST_trigger_forced(trigger_mask);
+
+        /* Wait for done */
+        while (!hal_FPGA_TEST_readout_done(trigger_mask));
         
         /* Read out one waveform for the channel requested */
         channels[atwd_channel] = buffer;
@@ -213,7 +217,10 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
             
             /* Discriminator-trigger the ATWD */
             hal_FPGA_TEST_trigger_disc(trigger_mask);
-            
+
+            /* Wait for done */
+            while (!hal_FPGA_TEST_readout_done(trigger_mask));
+
             /* Read out one waveform for the channel requested */
             channels[atwd_channel] = buffer;
             hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], channels[3], 
@@ -222,7 +229,7 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
             
             /* Find the peak (after subtracting out pedestal) */
             maxima[i] = buffer[0] - atwd_pedestal[0];
-            for (j=1; j<cnt; j++) {
+            for (j=0; j<cnt; j++) {
                 maxima[i] = ((buffer[j] - atwd_pedestal[j]) > maxima[i]) ?
                     (buffer[j] - atwd_pedestal[j]) : maxima[i];
             }
@@ -359,7 +366,7 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
     /*---------------------------------------------------------------------------------*/
     
     /* Turn the HV off */
-    halDisablePMT_HV();
+    halPowerDownBase();
 
     /* Free allocated structures */
     free(buffer);

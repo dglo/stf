@@ -1,5 +1,4 @@
 #
-#
 # stftotab.awk a simple script to convert the
 # xml definition file to a tab delimited file
 # of parameter information...
@@ -41,6 +40,7 @@ BEGIN {
 }
 
 /^\(unsignedInt$/ { type = "unsignedInt" }
+/^\(unsignedIntArray$/ { type = "unsignedIntArray" }
 /^\(unsignedLong$/ { type = "unsignedLong" }
 /^\(string$/ { type = "string" }
 /^\(boolean$/ { type = "boolean" }

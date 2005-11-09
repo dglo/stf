@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://glacier.lbl.gov/icecube/daq/stf file:/Volumes/IceCube/WorkSpaces/daq/stf/private/stf-apps/stfDefn.xsd">
   <name>pressure</name>
   <description>Test the ADC channel corresponding to the pressure gauge</description>
   <version major="1" minor="0"/>
@@ -18,10 +19,16 @@
   <inputParameter>
     <description>Number of ADC values to acquire to compute a mean and spread</description>
     <name>loop_count</name>
-    <unsignedInt default="1000" minValue="0" maxValue="1000000"/>
+    <unsignedInt default="1925" minValue="2" maxValue="1000"/>
   </inputParameter>
 
   <outputParameter>
+    <description>Mean of the 5volt ADC values in millivolts</description>
+    <name>adc_5v_mean_mvolts</name>
+    <unsignedInt/>
+  </outputParameter>
+
+   <outputParameter>
     <description>Mean of the ADC values distribution in count units</description>
     <name>adc_mean_counts</name>
     <unsignedInt/>

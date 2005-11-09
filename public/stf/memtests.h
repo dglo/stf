@@ -35,5 +35,7 @@ int test_walkbits_comparison (ui32 *bp1, ui32 *bp2, ui32 count, int m);
 int test_bitspread_comparison (ui32 *bp1, ui32 *bp2, ui32 count);
 int test_bitflip_comparison (ui32 *bp1, ui32 *bp2, ui32 count);
 int test_stuck_address (ui32 *bp1, ui32 *unused, ui32 count);
+int test_thorsten0f(ui32 *bp, ui32 *unused, ui32 count);
+int test_thorsten16(ui32 *bp, ui32 *unused, ui32 count);
 
 #endif

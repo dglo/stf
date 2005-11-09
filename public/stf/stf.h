@@ -29,21 +29,26 @@
 /** Definition of boolean (This can be removed if we 
  * have a general xxxTypes.h file)
  */
+#include "hal/DOM_MB_types.h"
+
+#if 0
 #define BOOLEAN int
+#endif
+
 /** See BOOLEAN */
 #define TRUE 1
 /** See BOOLEAN */
 #define FALSE 0
 
 /** define tags for primitive types */
-#define CHAR_TYPE "char"
-#define UINT_TYPE "unsigned int"
-#define ULONG_TYPE "unsigned long"
-#define BOOLEAN_TYPE "BOOLEAN"
+#define CHAR_TYPE "string"
+#define UINT_TYPE "unsignedInt"
+#define ULONG_TYPE "unsignedLong"
+#define BOOLEAN_TYPE "boolean"
 #define BOOLEAN_TRUE "true"
-#define BOOLEAN_FLASE "false"
-#define UINT_ARRAY_TYPE "unsigned int array"
-#define ULONG_ARRAY_TYPE "unsigned long array"
+#define BOOLEAN_FALSE "false"
+#define UINT_ARRAY_TYPE "unsignedIntArray"
+#define ULONG_ARRAY_TYPE "unsignedLongArray"
 
 #ifndef NULL
 /** define NULL, if not already available */
@@ -68,10 +73,10 @@ typedef struct {
 	/** name of test parameter (must be unique to individual test) */
 	char	*name;
 	/** parameter class (see xxx_PARAM defines) */
-	char	*class;
+   const char	*class;
 	/** conversion format to be applied to char *value field 
 	 * (see xxx_FORMAT defines) */
-	char	*type;
+   const char	*type;
 	/** char representstion of minimum param value */
 	char	*maxValue;
 	/** char representation of maximum param value */
@@ -84,12 +89,12 @@ typedef struct {
 	/** representation of value (see type above).  Note this
 	* field is writable */
 	union {
-	    char charValue[MAX_VALUE_CHAR_LEN];
+	   char *charValue; /* [MAX_VALUE_CHAR_LEN]; */
 	    unsigned int intValue;
 	    unsigned long longValue;
 	    BOOLEAN boolValue;
-	    unsigned int *intArrayPtr;
-	    unsigned long *longArrayPtr;
+	    unsigned int *intArrayValue;
+	    unsigned long *longArrayValue;
 	} value;
 	/** number of elements in the array...unused for non array params */
 	unsigned int arrayLength;
@@ -107,17 +112,33 @@ struct STF_DESCRIPTOR_STRUCT {
 	int	majorVersion;
 	/** integer value for this test's minor version number */
 	int	minorVersion;
+
+        /** common parameters...
+	 */
+
 	/** BOOLEAN to indicate that this test is runnable (determined
 	 * at initialization time) */
 	BOOLEAN	testRunnable;
-        /** number of parameters */
+        BOOLEAN passed; /* valid after entryPt called... */
+        const char *boardID; /* board id is read before test is started */
+
+	/** The 'comps_mask' used to check FPGA dependencies */
+	unsigned int fpgaDependencies;
+
+         /** number of parameters */
         int nParams;
 	/** pointer to this test's STF_PARAM structure */
 	STF_PARAM *params;
-	/** pointer to this test's initialization entry point */
-	void	(*initPt)(STF_DESCRIPTOR *);
-	/** pointer to this test's execution entry point */
-	void	(*entryPt)(STF_DESCRIPTOR *);
+	/** pointer to this test's initialization entry point 
+	 *
+	 * returns true if test is runnable...
+	 */
+	BOOLEAN	(*initPt)(STF_DESCRIPTOR *);
+        /** pointer to this test's execution entry point 
+	 *
+	 * returns true if test passed...
+	 */
+        BOOLEAN	(*entryPt)(STF_DESCRIPTOR *);
 
    /** used internally...
     */
@@ -126,6 +147,9 @@ struct STF_DESCRIPTOR_STRUCT {
 
 /* Prototypes
  */
+
+/** initialize a test */
+void stfInitTest(STF_DESCRIPTOR *d);
 
 /** initialize all tests */
 void stfInitAllTests(void);
@@ -137,7 +161,7 @@ void executeTest(STF_DESCRIPTOR *d);
 STF_DESCRIPTOR * findNextTest(STF_DESCRIPTOR *d);
 
 /** find test by name */
-STF_DESCRIPTOR * findTestByName(char *name);
+STF_DESCRIPTOR * findTestByName(const char *name);
 
 /** get test name */
 char * getTestName(STF_DESCRIPTOR *d);
@@ -155,16 +179,16 @@ int getTestMinorVersion(STF_DESCRIPTOR *d);
 STF_PARAM * getNextParam(STF_DESCRIPTOR *d, STF_PARAM *p);
 
 /** get param by name */
-STF_PARAM * getParamByName(STF_DESCRIPTOR *p, char *name);
+STF_PARAM * getParamByName(STF_DESCRIPTOR *p, const char *name);
 
 /** get param name */
 char * getParamName(STF_PARAM *p);
 
 /** get param class */
-char * getParamClass(STF_PARAM *p);
+const char * getParamClass(STF_PARAM *p);
 
 /** get param type */
-char * getParamType(STF_PARAM *p);
+const char * getParamType(STF_PARAM *p);
 
 /** get param minimum value */
 char * getParamMinValue(STF_PARAM *p);

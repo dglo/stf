@@ -3,6 +3,11 @@
   <name>atwd_pedestal_sweep_forced</name>
   <description>ATWD pedestal_atwd vs pedestal_voltage test</description>
   <version major="1" minor="0"/>
+
+  <fpgaDependencies>
+	<DAQ/>
+  </fpgaDependencies>
+
   <inputParameter>
     <description>DAC setting (of a 12 Bit device) for ATWD sampling speed</description>
     <name>atwd_sampling_speed_dac</name>
@@ -52,9 +57,9 @@
   </inputParameter>
 
   <inputParameter>
-    <description>Selects ATWD launch method: 0=forced trigger, 1=SPE discriminator trigger</description>
-    <name>atwd_trig_forced_or_spe</name>
-    <unsignedInt default="0" maxValue="1" minValue="0"/>
+    <description>The full range in mV</description>
+    <name>full_range_mv</name>
+    <unsignedInt default="1500" maxValue="4095" minValue="0"/>
   </inputParameter>
 
   <outputParameter>
@@ -78,7 +83,7 @@
   <outputParameter>
     <description>pedestal value in atwd counts for all pedestal settings</description>
     <name>atwd_pedestal_sweep_forced</name>
-    <unsignedInt/>
+    <unsignedIntArray length="4096"/>
   </outputParameter>
 
 </stf:test>

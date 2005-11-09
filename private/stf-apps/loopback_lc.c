@@ -3,6 +3,8 @@
 #include "stf/stf.h"
 #include "stf-apps/loopback_lc.h"
 
+#include "hal/DOM_MB_hal.h"
+
 BOOLEAN loopback_lcInit(STF_DESCRIPTOR *d) { return TRUE; }
 
 BOOLEAN loopback_lcEntry(STF_DESCRIPTOR *d,
@@ -12,30 +14,59 @@ BOOLEAN loopback_lcEntry(STF_DESCRIPTOR *d,
                     unsigned *lc_tx_dwn_lo,
                     unsigned *lc_tx_up_hi,
                     unsigned *lc_tx_up_lo,
-                    unsigned *lc_tx_up_hi_dwn_high,
+                    unsigned *lc_tx_up_hi_dwn_hi,
                     unsigned *lc_tx_up_hi_dwn_lo,
                     unsigned *lc_tx_up_lo_dwn_lo,
                     unsigned *lc_tx_up_lo_dwn_hi) {
-#if 0
-        : lcrs         $0         $90081018 !
-        : lcactlatch   $0000f000  $90081018 !
-        : lcrd      &16 base ! $9008101c @ . drop &10 base !
-        : lctxdwhi     $0000f100  $90081018 !
-        : lctxdwlo     $0000f200  $90081018 !
-        : lctxuphi     $0000f400  $90081018 !
-        : lctxuplo     $0000f800  $90081018 !
-        : lctxhihi     $0000f500  $90081018 !
-        : lctxhilo     $0000f900  $90081018 !
-        : lctxlolo     $0000fA00  $90081018 !
-        : lctxlohi     $0000f600  $90081018 !
+   unsigned i;
+   unsigned pulses[] = {
+      0x000, 0x100, 0x200, 0x400, 0x800, /* each by itself */
+      0x500, 0x900, 0xa00, 0x600  /* combination of two */
+   };
+   unsigned answers[] = {
+      0xaa00, 0x9a00, 0x6a00, 0xa900, 0xa600,
+      0x9900, 0x9600, 0x6600, 0x6900
+   };
+   unsigned *vars[] = {
+      lc_tx_quiet, lc_tx_dwn_hi, lc_tx_dwn_lo, lc_tx_up_hi, lc_tx_up_lo,
+      lc_tx_up_hi_dwn_hi, lc_tx_up_lo_dwn_hi, lc_tx_up_lo_dwn_lo,
+      lc_tx_up_hi_dwn_lo
+   };
+   const int npulses = sizeof(pulses)/sizeof(pulses[0]);
 
-        : lctestone  lcrs lcrd lcrs lctxdwhi lcrd lcrs lctxdwlo lcrd lcrs
-lctxuphi lcrd lcrs lctxuplo lcrd
-        : lctestboth lcrs lctxhihi lcrd lcrs lctxhilo lcrd lcrs lctxlolo lcrd
-lcrs lctxlohi lcrd
-#endif
+   /* set variables to zero... */
+   for (i=0; i<npulses; i++) *(vars[i]) = 0;
 
-                
+   for (i=0; i<loop_count; i++) {
+      int j;
 
-   return FALSE; 
+      for (j=0; j<npulses; j++) {
+         /* reset */
+         *(volatile unsigned *)0x90081018 = 0;
+
+         /* wait a bit for line to be quiet... */
+         halUSleep(2);
+
+         /* send a cmd down -- and latch... */
+         *(volatile unsigned *) 0x90081018 = 0xf000 | pulses[j];
+
+         /* wait for it to arrive... */
+         halUSleep(10);
+
+         /* did it arrive correctly? */
+         {  const unsigned answer = (*(volatile unsigned *) 0x9008101c)&0xff00;
+            if (answer==answers[j]) (*vars[j])++;
+         }
+      }
+   }
+
+   for (i=0; i<npulses; i++) if (*vars[i]!=loop_count) return FALSE;
+
+   return TRUE;
 }
+
+
+
+
+
+

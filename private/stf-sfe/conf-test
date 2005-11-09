@@ -29,7 +29,6 @@ qry=`printf \
       STFParameter.stf_paramtype_id=STFParameterType.stf_paramtype_id \
      order by STFParameter.name;" ${test}`
 
-#echo "qry: ${qry}"
 exec ${mysqlcmd} "${qry}" | awk -f ${awkpath}/dbtestfixup.awk | \
     awk -v test=${test} -f ${awkpath}/tabtoqry.awk
 

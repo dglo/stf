@@ -101,7 +101,6 @@ BOOLEAN atwd_clock2x_forcedEntry(STF_DESCRIPTOR *d,
  {
    int i;
    const int ch = (atwd_chip_a_or_b) ? 0 : 4;
-   const int muxch = 3;
    const int cnt = 128;
    unsigned *waveform = (unsigned *) calloc(cnt, sizeof(unsigned));
    int trigger_mask = (atwd_chip_a_or_b) ? 

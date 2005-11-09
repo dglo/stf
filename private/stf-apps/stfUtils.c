@@ -1,5 +1,6 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "stfUtils.h"
 
@@ -13,7 +14,7 @@ void clearError(void) {
 }
 
 void stfError(const char *err) {
-   char *t = strdup(err);
+   char *t = (char *)strdup(err);
    clearError();
    errorMessage = t;
 }

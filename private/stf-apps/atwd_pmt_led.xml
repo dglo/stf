@@ -170,4 +170,10 @@
     <unsignedIntArray length="128"/>
   </outputParameter>
 
+  <outputParameter>
+    <description>Light pulse count</description>
+    <name>light_pulse_count</name>
+    <unsignedInt/>
+  </outputParameter>
+
 </stf:test>

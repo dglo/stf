@@ -1,5 +1,6 @@
 /* atwd_pmt_led.c, skeleton file created by George
  */
+
 #include <stdlib.h>
 #include <math.h>
 
@@ -12,7 +13,7 @@
 #include "stf-apps/atwdUtils.h"
 
 BOOLEAN atwd_pmt_ledInit(STF_DESCRIPTOR *d) {
-   return FALSE;
+   return TRUE;
 }
 
 BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
@@ -42,18 +43,19 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
                     unsigned *LED_waveform_width,
                     unsigned *LED_waveform_amplitude,
                     unsigned *LED_waveform_position,
-                    unsigned *LED_waveform_pmtLED) {
+                    unsigned *LED_waveform_pmtLED,
+                    unsigned *light_pulse_count) {
    const int ch = (atwd_chip_a_or_b) ? 0 : 4;
-   int i;
+   int i, pmt_dac, count=0;
    const int cnt = 128;
    short *channels[4] = { NULL, NULL, NULL, NULL };
    short *buffer1 = (short *) calloc(128, sizeof(short));
    short *buffer2 = (short *) calloc(128, sizeof(short));
+   short *light_pulse_waveform = (short *) calloc(128, sizeof(short));
    int *sum_waveform_LED = (int *) calloc(128, sizeof(int));
    int *sum_waveform_PMT = (int *) calloc(128, sizeof(int));
    int trigger_mask = (atwd_chip_a_or_b) ? 
       HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
-   int pmt_dac;
    float real_delay = delay_in_ns/25.0 - 2;
 
    /* pretest 1) all five atwd dac settings are programmed... */
@@ -85,7 +87,6 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
    for (i=0; i<n_pedestal_waveforms; i++) {
       int j;
       hal_FPGA_TEST_trigger_LED(trigger_mask);      
-      hal_FPGA_TEST_trigger_forced(trigger_mask);      
       channels[3] = buffer1;
       channels[atwd_channel] = buffer2;      
       hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], 
@@ -105,11 +106,13 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
 
    /* 2) set LED and pmt dac... */
    halEnableLEDPS();
+   halUSleep(1000*2000);
    *real_LED_voltage = (halReadADC(DOM_HAL_ADC_SINGLELED_HV)*17/1000);    /*LED voltage = ADC*2*(150+20)/20*(1/1000) */
    pmt_dac = pmt_hv_high_volt*2;
    halEnableBaseHV();
    halWriteActiveBaseDAC(pmt_dac);
-   *real_hv_output = halReadBaseADC();
+   halUSleep(1000*2000);
+   *real_hv_output = halReadBaseADC()/2;
 
    /* wait for dacs, et al... */
    halUSleep(1000*100);
@@ -118,11 +121,11 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
     */
    for (i=0; i<cnt; i++) atwd_waveform_pmtLED[i] = 0;
    for (i=0; i<cnt; i++) LED_waveform_pmtLED[i] = 0;
+   for (i=0; i<cnt; i++) light_pulse_waveform[i] = 0;
    for (i=0; i<loop_count; i++) {
-      int j;
+      int j, k, l;
       
       hal_FPGA_TEST_trigger_LED(trigger_mask);      
-      hal_FPGA_TEST_trigger_forced(trigger_mask);      
       channels[3] = buffer1;
       channels[atwd_channel] = buffer2;      
       hal_FPGA_TEST_readout(channels[0], channels[1], channels[2], 
@@ -134,11 +137,34 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
 	LED_waveform_pmtLED[j] += buffer1[j];
 	atwd_waveform_pmtLED[j] += buffer2[j];
       }
+      /*Count light pulse*/
+      if (pedestal_subtraction) {
+	*atwd_baseline_waveform = 100;
+	
+	for (k=0; k<cnt; k++) {
+	  const int a = (int) buffer2[k];
+	  const int b = (int) sum_waveform_PMT[k];
+	  const int c = a-b+100;
+	  light_pulse_waveform[k] = (c<0) ? 0 : c;
+	}
+	
+	for (l=2; l<cnt; l++) {
+	  if ((light_pulse_waveform[l]-light_pulse_waveform[l-2])<-10 && 
+	      (light_pulse_waveform[l-1]-light_pulse_waveform[l-2])<-10)
+	    {
+	      count++;
+	      break;
+	    }
+	}
+      }
    }
-   for (i=0; i<cnt; i++) {
-     LED_waveform_pmtLED[i] /= loop_count;
-     atwd_waveform_pmtLED[i] /= loop_count;
-   }
+      free(light_pulse_waveform);
+      *light_pulse_count = count;
+      
+      for (i=0; i<cnt; i++) {
+	LED_waveform_pmtLED[i] /= loop_count;
+	atwd_waveform_pmtLED[i] /= loop_count;
+      }
 
    /* 6), 7) */
    if (pedestal_subtraction) {
@@ -169,6 +195,10 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
    
    free(sum_waveform_LED);
    free(sum_waveform_PMT);
+
+   /*turn off PMT and LED*/
+   halPowerDownBase();
+   halDisableLEDPS();
 
    /* 8) reverse waveform */
    reverseATWDIntWaveform(atwd_waveform_pmtLED);
@@ -240,5 +270,9 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
    free(buffer2);
    return       
      *real_hv_output > 0.95*pmt_hv_high_volt &&
-     *real_hv_output < 1.05*pmt_hv_high_volt;
+     *real_hv_output < 1.05*pmt_hv_high_volt &&
+     ((LED_dac==0 && *light_pulse_count>=(loop_count*0.95)) || (LED_dac==1023 && *light_pulse_count<=(loop_count*0.05))) &&
+     ((LED_dac==0 && *atwd_waveform_amplitude>880) || (LED_dac==1023 && *atwd_waveform_amplitude<2)) &&
+     ((LED_dac==0 && *LED_waveform_amplitude>60) || (LED_dac==1023 && *LED_waveform_amplitude<16)) &&
+     ((LED_dac==1023) || (LED_dac==0 && *LED_waveform_position>=38 && *LED_waveform_position<=44));
 }

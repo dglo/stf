@@ -7,12 +7,13 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-/*#include <sys/stropts.h>*/
 #include <fcntl.h>
 #include <unistd.h>
 
 #include <termios.h>
 #include <poll.h>
+
+#include "stf/stf.h"
 
 static int fdSer = -1;
 
@@ -272,7 +273,7 @@ int main(int argc, char *argv[]) {
 	return 1;
       }
 
-      if ((wfd = open(argv[ai+2], O_CREAT|O_TRUNC|O_WRONLY))<0) {
+      if ((wfd = open(argv[ai+2], O_CREAT|O_TRUNC|O_WRONLY, 0644))<0) {
 	perror("open rcv xml file");
 	return 1;
       }

@@ -7,7 +7,7 @@
   <inputParameter>
     <description>Number of times to run the test</description>
     <name>loop_count</name>
-    <unsignedInt default="10" maxValue="1000000" minValue="1"/>
+    <unsignedInt default="1000" maxValue="1000000" minValue="1"/>
   </inputParameter>
 
   <outputParameter>

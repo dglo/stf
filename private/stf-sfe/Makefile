@@ -11,19 +11,21 @@ vpath %.xml ../stf-apps
 #
 # add tests to each here...
 #
-TABS      = ADC.tab memory.tab StfEg.tab atwd_pedestal.tab atwd_baseline.tab pmt_hv_ramp.tab pmt_hv_stability.tab pressure.tab
-XMLFILES  = ADC.xml memory.xml StfEg.xml atwd_pedestal.xml atwd_baseline.xml pmt_hv_ramp.xml pmt_hv_stability.xml pressure.xml
-HTMLFILES = ADC.html memory.html StfEg.html atwd_pedestal.html atwd_baseline.html pmt_hv_ramp.html pmt_hv_stability.html pressure.html
-HTMLDIRS  = ADC memory StfEg atwd_pedestal atwd_baseline pmt_hv_ramp pmt_hv_stability pressure
+TESTS = ADC memory StfEg atwd_pedestal atwd_baseline pmt_hv_ramp \
+	pmt_hv_stability pmt_pv_ratio pressure pulser_spe_mpe \
+	atwd_pedestal_sweep_forced atwd_pulser_spe \
+	atwd_pedestal_spe atwd_clock1x_forced \
+	fadc_fe_pulser fadc_baseline fadc_fe_forced \
+	loopback_lc atwd_pedestal_noise
 
-all: html
+TABS      = $(TESTS:%=%.tab)
+HTMLDIRS  = $(TESTS)
+
+all: html cgi stftcp chkpt
 
 clean:
 	rm -f *.o *.i *.bin *.elf *.srec \
-		run-tests.html gendir stfDirectory.[ch] \
-		$(HTMLFILES) $(TABS) all.tab \
-		memory.h atwd_pedestal.h adwd_baseline.h \
-		StfEg.h \
+		$(TABS) tcal.tab all.tab \
 		chkpt stftcp mk-name
 
 test-cgi: test-cgi.c
@@ -34,27 +36,34 @@ stf: stf.c
 
 install: html-install
 
-html: run-tests.html $(HTMLFILES) $(TABS) all.tab
+html: $(TABS) tcal.tab all.tab
 
 html-dirs:
 	(cd /var/www/stf/xml; mkdir -p $(HTMLDIRS))
+	(cd /var/www/stf/xml; mkdir -p std-tests)
+	(cd /var/www/stf/xml; mkdir -p std-results)
 
-html-install: run-tests.html index.html cgi-install html html-dirs
-	cp *.html /var/www/stf
+html-install: index.html cgi-install html html-dirs
+	cp index.html /var/www/stf
+	if [[ ! -d /var/www/stf ]]; then echo "no /var/www/stf"; fi
+	if [[ ! -d /var/www/stf/xml ]]; then mkdir /var/www/stf/xml; fi
 	cp all.tab /var/www/stf/xml
 	cp servers /var/www/stf/xml
 
-
-CGIS = run-test view-results view-summary validate-param pick-server
+CGIS = run-test view-results view-summary validate-param pick-server \
+	plot-array pick-dhserver alloff run-tests conf-test run-std-tests
 CGIHELPERS = mk-name chkpt stftcp sumtotable.awk common.sh qrytoxml.awk \
-	restotab.awk tabtosum.awk tabtohtml.awk validate-qry.awk \
-	servertab.awk
+	restotab.awk tabtohtml.awk validate-qry.awk \
+	servertab.awk dhservertab.awk stfmode run-tests.awk \
+	tabtoqry.awk dbtestfixup.awk
 
 cgi: $(CGIS) $(CGIHELPERS)
 
 cgi-install: $(CGIS) $(CGIHELPERS)
 	cp $(CGIS) /usr/lib/cgi-bin/stf
+	if [[ ! -d /var/www/stf/xml ]]; then mkdir /var/www/stf/xml; fi
 	if [[ ! -f /var/www/stf/xml/uniq.txt ]]; then echo "0" > /var/www/stf/xml/uniq.txt; fi
+	if [[ ! -d /usr/lib/cgi-bin/stf/xml/bin ]]; then mkdir -p /usr/lib/cgi-bin/stf/xml/bin; fi
 	cp $(CGIHELPERS) "/usr/lib/cgi-bin/stf/xml/bin"
 
 mk-name: mk-name.c
@@ -66,18 +75,5 @@ stftcp: stftcp.c
 chkpt: chkpt.c
 	gcc -o chkpt -Wall chkpt.c
 
-all.tab: $(TABS)
-	cat $(TABS) > all.tab
-
-run-tests.html: run-tests.awk all.tab
-	awk -f run-tests.awk all.tab > run-tests.html
-
-
-
-
-
-
-
-
-
-
+all.tab: $(TABS) tcal.tab
+	cat $(TABS) tcal.tab > all.tab

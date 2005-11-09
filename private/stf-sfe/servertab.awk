@@ -51,7 +51,7 @@ BEGIN {
       
       print "<td>";
       if ( status == "Ready" ) {
-	 print "<a href=\"http://deimos.lbl.gov/cgi-bin/stf/pick-server?stfserver=" $1 "&stfport=" $2 "\">Pick</a>"
+	 print "<a href=\"/cgi-bin/stf/pick-server?stfserver=" $1 "&stfport=" $2 "\">Pick</a>"
       }
       print "</td>";
       
@@ -65,7 +65,7 @@ END {
 
    if (nready>0) {
       print "<p>";
-      print "<a href=\"http://deimos.lbl.gov/stf/run-tests.html\">";
+      print "<a href=\"/cgi-bin/stf/run-tests\">";
       print "Configure and Run Tests</a>";
    }
    else {

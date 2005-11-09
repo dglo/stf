@@ -52,7 +52,7 @@ BOOLEAN atwd_pedestal_speEntry(STF_DESCRIPTOR *d,
    prescanATWD(trigger_mask);
 
    /* 2) disable HV */
-   halDisablePMT_HV();
+   halPowerDownBase();
 
    /* 3) get spe_dac_nominal */
    spe_dac_nominal = speDACNominal(0, atwd_pedestal_dac);

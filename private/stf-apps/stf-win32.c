@@ -136,14 +136,14 @@ static int getLine(char *buf, int max) {
 
 static int waitAck(void) {
   char buf[512];
-  printf("waitAck!\n");
+  /*printf("waitAck!\n");*/
   while (1) {
     if (getLine(buf, sizeof(buf))) {
       fprintf(stderr, "can't get line!\n");
       return 1;
     }
 
-    printf("line: '%s'\n", buf);
+    /*printf("line: '%s'\n", buf);*/
 
     if (strcmp(buf, "OK")==0) return 0;
   }

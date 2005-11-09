@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
   <name>temperature</name>
-  <description>Measure the DOM Temperature</description>
+  <description>Measure the DOM Temperature in mK</description>
   <version major="1" minor="0"/>
   <inputParameter>
-    <description>Environment Temperature</description>
+    <description>Environment Temperature in C</description>
     <name>env_temp</name>
     <unsignedInt default="25"/>
   </inputParameter>
 
   <outputParameter>
-    <description>Temperature</description>
+    <description>Temperature in mK</description>
     <name>temp</name>
     <unsignedInt/>
   </outputParameter>

@@ -7,7 +7,7 @@ BEGIN {
 
 {  
    if ( tests[ $1 ] == 0 ) {
-      printf("  <li><a href=\"%s.html\">%s</a></li>\n", 
+      printf("  <li><a href=\"/cgi-bin/stf/conf-test?testname=%s\">%s</a></li>\n", 
 	     $1, $1);
       tests [ $1 ] = 1;
    }
@@ -18,4 +18,3 @@ END {
    printf("</body>\n</html>\n");
 }
 
- 

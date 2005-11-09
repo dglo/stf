@@ -5,5 +5,8 @@
 #
 source /usr/lib/cgi-bin/stf/xml/bin/common.sh
 
-cd /usr/lib/cgi-bin/stf/xml/bin
-exec java stfmode domhub2
+#cd /usr/lib/cgi-bin/stf/xml/bin
+#exec java stfmode domhub2.lbl.gov
+
+dhclient -stf 131.243.36.211
+

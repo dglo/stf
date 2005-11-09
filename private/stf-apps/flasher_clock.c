@@ -20,23 +20,27 @@
 
 /* Pass/fail defines */
 /* Maximum allowed clock validation time, in us */
-/* Should be around 250 us * 8 */
-#define MAX_CLOCK_TIME_US  2050
+/* Pass criterion is about 50us of instability */
+#define MAX_CLOCK_TIME_US  50
 
 BOOLEAN flasher_clockInit(STF_DESCRIPTOR *desc) { return TRUE; }
 
 BOOLEAN flasher_clockEntry(STF_DESCRIPTOR *desc,
                            char ** flasher_id,
                            unsigned int * config_time_us,
-                           unsigned int * valid_time_us
+                           unsigned int * valid_time_us,
+                           unsigned int * reset_time_us
                            ) {
-    
+
+    static char dummy_id[9] = "deadbeef";
+    *flasher_id = dummy_id;
+
     /* Make sure PMT is off */
     halPowerDownBase();
 
     /* Initialize the flaherboard and power up */
     /* Record configuration and clock validation times */
-    int err = hal_FB_enable(config_time_us, valid_time_us);
+    int err = hal_FB_enable(config_time_us, valid_time_us, reset_time_us, DOM_FPGA_TEST);
     if (err != 0) {
 #ifdef VERBOSE
         printf("Flasher board enable failure (%d)!  Aborting test!\r\n", err);
