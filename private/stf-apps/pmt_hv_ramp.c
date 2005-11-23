@@ -145,6 +145,7 @@ BOOLEAN pmt_hv_rampEntry(STF_DESCRIPTOR *desc,
 
     /* Turn the HV off */
     halPowerDownBase();
+    halUSleep(2000000);  /* allow 2s for hv to stabilize... */
 
     /* Did we exceed the allowed error? */
     if (hv_err_level > MAX_ERR_VOLT * 2) {

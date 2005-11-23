@@ -137,6 +137,7 @@ BOOLEAN atwd_pmt_speEntry(STF_DESCRIPTOR *d,
    
    free(sum_waveform);
    halPowerDownBase();
+   halUSleep(2000000);  /* allow 2s for hv to stabilize... */
 
    /* 8) reverse waveform */
    reverseATWDIntWaveform(atwd_waveform_pmt_spe);

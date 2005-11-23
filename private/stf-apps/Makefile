@@ -29,26 +29,17 @@ TESTOBJS  = ADC.o memory.o StfEg.o atwd_pedestal.o atwd_baseline.o \
 	fadc_fe_external.o atwd_pmt_led.o atwd_clock2x_forced.o \
 	flasher_clock.o atwd_led_nopmt.o atwd_sample_periode.o
 
-XMLFILES  = $(TESTOBJS:.o=.xml)
-CFILES    = $(TESTOBJS:.o=.c)
-XMLTEMPLATES = $(TESTOBJS:%.o=%-template.xml)
-
-$(XMLTEMPLATES): %-template.xml: %.xml
-	xmln $< | awk -f ../stf-sfe/stftotab.awk | awk -f mktemplate.awk > $@
+XMLFILENAMES = $(TESTOBJS:.o=.xml)
+XMLPATH      = $(XMLDESCPATH)
+XMLFILES     = $(addprefix $(XMLPATH)/,$(XMLFILENAMES))
+CFILES       = $(TESTOBJS:.o=.c)
 
 #
 # generated links...
 #
 HDRFILES  = $(TESTOBJS:.o=.h)
 
-#
-# java code gen...
-#
-GENJAVA=../../../stf/src/icecube/daq/stf/autogen/STFParameterLookup.java
-
 all: stfserv.elf menu.elf echomode.elf $(GENJAVA) wiggle.elf
-
-java: $(GENJAVA)
 
 clean:
 	rm -f *.o *.i *.bin *.elf *.srec \
@@ -99,23 +90,3 @@ $(HDRFILES): stfDirectory.h
 
 ../bin/echomode: echomode.o $(EXOBJS)
 	gcc -o echomode echomode.o $(EXOBJS) $(LIBHAL) -lm
-
-$(GENJAVA): $(XMLFILES) tcal.xml genspl.awk
-	xmln $(XMLFILES) tcal.xml | awk -f ../stf-sfe/stftotab.awk | \
-		awk -f genspl.awk > $(GENJAVA)
-
-templates.tar.gz: $(XMLTEMPLATES)
-	tar cf - $(XMLTEMPLATES) | gzip -c > templates.tar.gz
-
-
-
-
-
-
-
-
-
-
-
-
-

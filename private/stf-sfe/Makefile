@@ -1,9 +1,11 @@
 .SUFFIXES: .c .o .S .elf .srec .xml .html .tab .bin
 
-vpath %.xml ../stf-apps
+XMLPATH=$(XMLDESCPATH)
+
+vpath %.xml $(XMLPATH)
 
 .xml.tab:
-	xmlv $< | awk -f stftotab.awk > $*.tab
+	xmln $< | awk -f stftotab.awk > $*.tab
 
 .tab.html:
 	awk -v test=$* -f tabtoqry.awk $< > $*.html

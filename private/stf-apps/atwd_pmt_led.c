@@ -198,6 +198,8 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
 
    /*turn off PMT and LED*/
    halPowerDownBase();
+   /* wait 2s for base to stabilize... */
+   halUSleep(2000000);
    halDisableLEDPS();
 
    /* 8) reverse waveform */

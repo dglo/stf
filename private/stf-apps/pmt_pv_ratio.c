@@ -367,6 +367,7 @@ BOOLEAN pmt_pv_ratioEntry(STF_DESCRIPTOR *desc,
     
     /* Turn the HV off */
     halPowerDownBase();
+    halUSleep(2000000);  /* allow 2s for hv to stabilize... */
 
     /* Free allocated structures */
     free(buffer);

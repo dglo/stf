@@ -132,6 +132,7 @@ BOOLEAN pmt_hv_stabilityEntry(STF_DESCRIPTOR *desc,
 
     /* Turn the HV off */
     halPowerDownBase();
+    halUSleep(2000000); /* allow 2s for hv to stabilize... */
 
     /* Check for failure */
     if (*hv_read_rms_mvolt > HV_MAX_RMS_MVOLT) 
