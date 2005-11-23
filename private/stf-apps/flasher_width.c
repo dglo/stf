@@ -23,11 +23,8 @@
 /* Number of pedestals to average */
 #define PEDESTAL_TRIG_CNT        100
 
-/* Number of LEDs + TTL pulse (=~ LED 13) */
-#define N_LEDS                    13
-
-/* TTL pulse index */
-#define FB_TTL_IDX                12
+/* Number of LEDs */
+#define N_LEDS                    12
 
 /* Maximum pulse width setting */
 #define FB_MAX_WIDTH             255
@@ -35,16 +32,11 @@
 /* Pass/fail defines */
 /* Width in ATWD samples here is *approximately* same in ns */
 #define FB_MIN_ATWD_WIDTH         20
-#define FB_MAX_ATWD_WIDTH         90
+#define FB_MAX_ATWD_WIDTH         95
 
 /* Early abort pulse width measurement */
 /* If we measure this width, we can stop */
-#define FB_ATWD_WIDTH_DONE        95
-
-/* All width settings must be covered by +/-window */
-/* Units are ATWD bins, which at the default sampling speed */
-/* is ~= 1.1 ns / bin */
-#define FB_WIDTH_WINDOW            1
+#define FB_ATWD_WIDTH_DONE       100
 
 /* Rounding convert to int */
 #define round(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
@@ -69,7 +61,7 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
                            unsigned int * missing_width,
                            unsigned int * failing_led,
                            unsigned int * failing_led_cnt,
-                           unsigned int * led_ttl_current
+                           unsigned int * led_avg_current
                            ) {
     
     int i,j,trig;
@@ -207,18 +199,10 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
 
     for (led = 0; led < N_LEDS; led++) {
                 
-        if (led != FB_TTL_IDX) {
-#ifdef VERBOSE
-            printf("Enabling LED %d\n", (led+1));
-#endif
-            hal_FB_enable_LEDs(1 << led);
-        }
-        else {
-#ifdef VERBOSE
-            printf("Checking TTL pulse\n");
-#endif
-            hal_FB_enable_LEDs(0);
-        }
+        #ifdef VERBOSE
+        printf("Enabling LED %d\n", (led+1));
+        #endif
+        hal_FB_enable_LEDs(1 << led);
         
         /* Select which LED current to send from the flasherboard (encoded) */
         hal_FB_select_mux_input(DOM_FB_MUX_LED_1 + led);
@@ -236,12 +220,9 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
             /* Initialize the current waveform array */
             for(j=0; j<cnt; j++)
                 currents[led][j] = 0;
-
-            #ifdef VERBOSE            
-            if (led != FB_TTL_IDX)
-                printf("DEBUG: Taking %d flasherboard triggers using LED %d\r\n",led_trig_cnt, led+1);
-            else 
-                printf("DEBUG: Taking %d flasherboard triggers using TTL pulse\r\n",led_trig_cnt);
+            
+            #ifdef VERBOSE
+            printf("DEBUG: Taking %d flasherboard triggers using LED %d\r\n",led_trig_cnt, led+1);
             #endif
 
             /* Start flashing */
@@ -295,14 +276,13 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
             /* The amplitude should be something reasonable */
             int rise = 0;
             if (peak > 10) {
-                for (j=cnt-1; j>=0; j--) {
+                for (j=0; j<cnt; j++) {
                     ampl = currents[led][127] - currents[led][j];
                     if ((rise == 0) && (ampl > 0.5*peak)) {
                         rise = j;
                     }
                     else if ((rise > 0) && (ampl < 0.5*peak)) {
-                        /* Sign backwards because ATWD is time-reversed */
-                        widths[w] = rise - j;
+                        widths[w] = j - rise;
                         break;
                     }            
                 }
@@ -315,36 +295,37 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
             /* Instead of spike peak, by averaging between pulse width */
             /* Uses the fact that rise time is reasonably fast */
             float peak_sum = 0;
-            if (widths[w] > 1) {
-                for (j=rise-1; j>(rise-round(widths[w])); j--)
-                    peak_sum += currents[led][0] - currents[led][j];
-                peak = (float)peak_sum / (widths[w] - 1);
+            if (widths[w] > 0) {
+                for (j=0; j<cnt; j++) {
+                    /* Intentionally used < instead of <= */
+                    if ((j > rise) && (j < rise+widths[w])) {
+                        peak_sum += currents[led][127] - currents[led][j];
+                    }
+                }
+                peak = (float)peak_sum / (round(widths[w] - 1));
             }
 
             int last_ampl = 0;
-            int fall = 0;
             float rise_f, fall_f;
             rise = 0;
             rise_f = fall_f = 0;
 
-            /* Interpolate half-max points for final width measurement */
+            /* Interpolate for final width measurement */
             if (peak > 10) {
-                for (j=cnt-1; j>=0; j--) {
+                for (j=0; j<cnt; j++) {
                     ampl = currents[led][127] - currents[led][j];
                     if ((rise == 0) && (ampl > 0.5*peak) && (j > 0)) {
                         rise = j;
-                        rise_f = (float)(0.5*peak - ampl) / (float)(last_ampl-ampl) + j;
+                        rise_f = (float)(0.5*peak - last_ampl) / (ampl - last_ampl) + (j-1);
                     }
                     else if ((rise > 0) && (ampl < 0.5*peak)) {
-                        fall = j;
-                        fall_f = (float)(0.5*peak - ampl) / (float)(last_ampl-ampl) + j;
+                        fall_f = (float)(0.5*peak - last_ampl) / (ampl - last_ampl) + (j-1);
                         break;
                     }
                     last_ampl = ampl;
                 }
-                /* Sign backwards because ATWD is time-reversed */
-                widths[w] = rise_f - fall_f;                
-                /* print("DEBUG: rise at %d (%f), fall at %d (%f)\r\n", rise, rise_f, fall, fall_f); */
+                widths[w] = fall_f - rise_f;
+
             }
             else {
                 widths[w] = 0;
@@ -355,7 +336,7 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
             printf("Current peak (average): %.1f\n", peak);
             printf("Current width: %.2f\n", widths[w]);
             for (j=0; j<cnt; j++)
-                printf("%d %d\n", j, currents[led][127] - currents[led][j]);
+                printf("%d %d %d %d\n", j, currents[led][j], channels[3][j], atwd_pedestal[3][j]);
             #endif
             
             /* Stop flashing */
@@ -372,13 +353,12 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
         int w_max = w;
 
         /* Check to make sure all widths are covered by some setting */
-        /* Window is now +/- WIDTH_WINDOW bins (~ns) */
         int w_ref;
         int found;
         for (w_ref = 0; w_ref <= FB_MAX_ATWD_WIDTH; w_ref++) {
             found = 0;
-            for (w = 0; w < w_max; w++) {
-                if (fabs(widths[w]-w_ref) < FB_WIDTH_WINDOW) {
+            for (w = 0; w < w_max; w++) {                
+                if ((int)widths[w] == w_ref) {
                     #ifdef VERBOSE                   
                     printf("Found wref %d at index %d\r\n", w_ref, w);
                     #endif
@@ -393,10 +373,9 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
                 /* Check pass/fail condition */
                 if (w_ref > FB_MIN_ATWD_WIDTH) {
                     led_fail[led] = 1;
-                }                
+                }
                 /* Keep track of the largest one for reporting */
-                /* Do NOT check TTL pulse */
-                if ((w_ref > *missing_width) && (led != FB_TTL_IDX)) {
+                if (w_ref > *missing_width) {
                     *missing_width = w_ref;
                     if (w_ref > FB_MIN_ATWD_WIDTH) 
                         *failing_led = led+1;
@@ -409,34 +388,34 @@ BOOLEAN flasher_widthEntry(STF_DESCRIPTOR *desc,
     /* Turn the flasherboard off */
     hal_FB_disable();
 
-    /* Return waveform of TTL pulse at maximum width point */
+    /* Return waveform average of all LEDs at maximum width point */
     /* This is merely for reference -- is not used for pass/fail */
     /* Offset by 1024 since STF doesn't support arrays of signed ints */
     for(j=0; j<cnt; j++)            
-        led_ttl_current[j] = (unsigned int)(currents[FB_TTL_IDX][j] + 1024);
+        led_avg_current[j] = 0;
+   
+    for (led=0; led<N_LEDS; led++) {
+        for(j=0; j<cnt; j++) {
+            led_avg_current[j] += (unsigned int)(currents[led][j] + 1024);
+        }
+    }
+    for(j=0; j<cnt; j++)            
+        led_avg_current[j] /= (unsigned int)N_LEDS;
 
     #ifdef VERBOSE
-    printf("TTL pulse waveform (offset +1024)\n");
+    printf("Averaged current of all LEDs (offset +1024)\n");
     for(j=0; j<cnt; j++)            
-        printf("%d %d\n",j, led_ttl_current[j]);
+        printf("%d %d\n",j, led_avg_current[j]);
     #endif
 
     /* Check pass/fail conditions */
     BOOLEAN passed = TRUE;
     for (led = 0; led < N_LEDS; led++) {
-        /* Do NOT check TTL pulse */
-        if (led != FB_TTL_IDX) {
-            *failing_led_cnt += led_fail[led];
+        *failing_led_cnt += led_fail[led];
 #ifdef VERBOSE
-            printf("LED %d: %s\r\n", (led+1), led_fail[led] ? "failed" : "passed");
+        printf("LED %d: %s\r\n", (led+1), led_fail[led] ? "failed" : "passed");
 #endif
-            passed &= (led_fail[led] == 0);
-        }
-        else {
-#ifdef VERBOSE
-            printf("TTL pulse: %s\r\n", led_fail[led] ? "would fail" : "would pass");
-#endif
-        }
+        passed &= (led_fail[led] == 0);
     }
 
     /* Free allocated structures */

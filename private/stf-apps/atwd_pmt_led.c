@@ -17,7 +17,7 @@ BOOLEAN atwd_pmt_ledInit(STF_DESCRIPTOR *d) {
 }
 
 BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
-                    unsigned atwd_sampling_speed,
+                    unsigned atwd_sampling_speed_dac,
                     unsigned atwd_ramp_top_dac,
                     unsigned atwd_ramp_bias_dac,
                     unsigned atwd_analog_ref_dac,
@@ -44,8 +44,7 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
                     unsigned *LED_waveform_amplitude,
                     unsigned *LED_waveform_position,
                     unsigned *LED_waveform_pmtLED,
-                    unsigned *light_pulse_count,
-                    unsigned *atwd_sampling_speed_dac) {
+                    unsigned *light_pulse_count) {
    const int ch = (atwd_chip_a_or_b) ? 0 : 4;
    int i, pmt_dac, count=0;
    const int cnt = 128;
@@ -59,12 +58,8 @@ BOOLEAN atwd_pmt_ledEntry(STF_DESCRIPTOR *d,
       HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
    float real_delay = delay_in_ns/25.0 - 2;
 
-   /* pretest A) computer atwd_sampling speed dac... */
-   *atwd_sampling_speed_dac = 
-      calcATWDSamplingSpeedDAC(ch, trigger_mask, atwd_sampling_speed);
-
    /* pretest 1) all five atwd dac settings are programmed... */
-   halWriteDAC(ch, *atwd_sampling_speed_dac);
+   halWriteDAC(ch, atwd_sampling_speed_dac);
    halWriteDAC(ch+1, atwd_ramp_top_dac);
    halWriteDAC(ch+2, atwd_ramp_bias_dac);
    halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF, atwd_analog_ref_dac);
