@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>atwd_clock2x_forced</name>
+  <description>Determine ATWD sampling speed parameters from clock 1X input</description>
+  <version major="1" minor="0"/>
+
+  <fpgaDependencies>
+	<DAQ/>
+  </fpgaDependencies>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD sampling speed</description>
+    <name>atwd_sampling_speed_dac</name>
+    <unsignedInt default="850" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Top Voltage</description>
+    <name>atwd_ramp_top_dac</name>
+    <unsignedInt default="2097" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Ramp Bias current </description>
+    <name>atwd_ramp_bias_dac</name>
+    <unsignedInt default="3000" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Analog Reference Voltage</description>
+    <name>atwd_analog_ref_dac</name>
+    <unsignedInt default="2048" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>DAC setting (of a 12 Bit device) for ATWD Pedestal Voltage</description>
+    <name>atwd_pedestal_dac</name>
+    <unsignedInt default="1925" maxValue="4095" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Selects one of two chips (A or B) on the board:0=ATWD-A and 1=ATWD-B</description>
+    <name>atwd_chip_a_or_b</name>
+    <unsignedInt default="1" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Number of waveforms to take and average over before analysis</description>
+    <name>loop_count</name>
+    <unsignedInt default="1000" maxValue="1000000" minValue="1"/>
+  </inputParameter>
+
+  <outputParameter>
+    <description>Is the peak-to-peak amplitude of the averaged clock 1x waveform</description>
+    <name>atwd_clock1x_amplitude</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>ATWD sampling speed in MHz</description>
+    <name>atwd_sampling_speed_MHz</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>ATWD sampling speed dac setting at 300MHz</description>
+    <name>atwd_sampling_speed_dac_300MHz</name>
+    <unsignedInt/>
+  </outputParameter>
+  
+  <outputParameter>
+    <description>ATWD clock1x waveform</description>
+    <name>atwd_clock1x_waveform</name>
+    <unsignedIntArray length="128" />
+  </outputParameter>
+
+  <outputParameter>
+    <description>How many clocks per test</description>
+    <name>ATWD_clock</name>
+    <unsignedInt/>
+  </outputParameter>
+
+</stf:test>
+
+
+
+
+
+
+
+

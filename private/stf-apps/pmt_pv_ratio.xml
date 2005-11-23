@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<stf:test xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf">
+  <name>pmt_pv_ratio</name>
+  <description>PMT P/V Ratio Test</description>
+  <version major="1" minor="0"/>
+
+  <inputParameter>
+    <description>ATWD A or B (0=A,1=B)</description>
+    <name>atwd_chip_a_or_b</name>
+    <unsignedInt default="0" maxValue="1" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>ATWD Channel</description>
+    <name>atwd_channel</name>
+    <unsignedInt default="0" maxValue="2" minValue="0"/>
+  </inputParameter>
+
+  <inputParameter>
+    <description>Target SPE Height at 10^7 Gain (ATWD units)</description>
+    <name>atwd_spe_height</name>
+    <unsignedInt default="60" maxValue="500" minValue="5"/>
+  </inputParameter>
+  
+  <inputParameter>
+    <description>PV SPE Trigger Count</description>
+    <name>pv_trig_cnt</name>
+    <unsignedInt default="10000" maxValue="20000" minValue="2000"/>
+  </inputParameter>
+
+  <outputParameter>
+    <description>P/V Ratio (*10)</description>
+    <name>pv_ratio_10</name>
+    <unsignedInt/>
+  </outputParameter>
+  
+  <outputParameter>
+    <description>Histogram SPE Peak (ATWD units)</description>
+    <name>hist_spe_peak</name>
+    <unsignedInt/>
+  </outputParameter>
+
+   <outputParameter>
+     <description>Histogram Array (60 bins)</description>
+	 <name>hist_array</name>
+	 <unsignedIntArray length="60" />
+   </outputParameter>  
+
+  <outputParameter>
+    <description>SPE Discriminator DAC Level</description>
+    <name>spe_disc_dac</name>
+    <unsignedInt/>
+  </outputParameter>
+
+  <outputParameter>
+    <description>HV 10^7 Gain Level (V)</description>
+    <name>hv_set_volt</name>
+    <unsignedInt/>
+  </outputParameter>
+
+</stf:test>
+
+
+
+
+
+
+
+
