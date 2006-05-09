@@ -17,38 +17,6 @@ BOOLEAN atwd_clock1x_forcedInit(STF_DESCRIPTOR *d) {
    return TRUE;
 }
 
-/* find period in an atwd waveform
- */
-static unsigned findPeriod(unsigned *w) {
-   int *mn = (unsigned *) calloc(128, sizeof(unsigned));
-   unsigned *cg = (unsigned *) calloc(128, sizeof(unsigned));
-   int i, j;
-   double sum = 0;
-   unsigned period;
-
-   /* first subtract mean...
-    */
-   for (i=0; i<128; i++) sum += w[i];
-   sum/=128;
-   for (i=0; i<128; i++) mn[i] = (int)w[i] - (int) sum;
-
-   /* now compute autocorrelagram */
-   for (i=0; i<128; i++) {
-      int val = 0;
-      for (j=0; j<128; j++)
-	 /* FIXME: this is wrong, corr can be negative! */
-	 val += mn[j]*mn[(i+j)&0x7f];
-      cg[i] = (val<0) ? 0 : val;
-   }
-
-
-   period = (unsigned) (findFirstPeak(cg)*20e6);
-   
-   free(mn);
-   free(cg);
-   return period;
-}
-
 /* find the period of a signal given
  * the (positive only) autocorrelegram...
  *
@@ -85,6 +53,38 @@ static float findFirstPeak(unsigned *w) {
    }
 }
 
+/* find period in an atwd waveform
+ */
+static unsigned findPeriod(unsigned *w) {
+   int *mn = (unsigned *) calloc(128, sizeof(unsigned));
+   unsigned *cg = (unsigned *) calloc(128, sizeof(unsigned));
+   int i, j;
+   double sum = 0;
+   unsigned period;
+
+   /* first subtract mean...
+    */
+   for (i=0; i<128; i++) sum += w[i];
+   sum/=128;
+   for (i=0; i<128; i++) mn[i] = (int)w[i] - (int) sum;
+
+   /* now compute autocorrelagram */
+   for (i=0; i<128; i++) {
+      int val = 0;
+      for (j=0; j<128; j++)
+	 /* FIXME: this is wrong, corr can be negative! */
+	 val += mn[j]*mn[(i+j)&0x7f];
+      cg[i] = (val<0) ? 0 : val;
+   }
+
+
+   period = (unsigned) (findFirstPeak(cg)*20e6);
+   
+   free(mn);
+   free(cg);
+   return period;
+}
+
 BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
                     unsigned atwd_sampling_speed_dac,
                     unsigned atwd_ramp_top_dac,
@@ -117,7 +117,6 @@ BOOLEAN atwd_clock1x_forcedEntry(STF_DESCRIPTOR *d,
 
    /* 2) select clock1x on analog_mux...
     */
-
    prescanATWD(trigger_mask);
    
    halSelectAnalogMuxInput(DOM_HAL_MUX_OSC_OUTPUT);
