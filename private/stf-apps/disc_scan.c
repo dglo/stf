@@ -70,7 +70,9 @@ BOOLEAN disc_scanEntry(STF_DESCRIPTOR *d,
          halUSleep(20*1000);
 
          /* readout the rate... */
-         disc_sum_waveform[n] += hal_FPGA_TEST_get_spe_rate();
+         disc_sum_waveform[n] += (disc_spe_or_mpe) ? 
+		hal_FPGA_TEST_get_mpe_rate() : 
+		hal_FPGA_TEST_get_spe_rate();
       }
    }
 
@@ -98,10 +100,15 @@ BOOLEAN disc_scanEntry(STF_DESCRIPTOR *d,
       if (disc_sum_waveform[i]>(unsigned) (0.5*nominalRate)) 
          break;
     edge_pos = i-(*disc_scan_noise_band-zero_dac+window_dac);
-   *disc_scan_edge_pos = speDACToUVolt(i, atwd_pedestal_dac)-
-                         speDACToUVolt((i-edge_pos), atwd_pedestal_dac);
-   
-   /* find the flat range, the maximum contiguous set of samples +-5% from
+      if (disc_spe_or_mpe) {    
+         *disc_scan_edge_pos = mpeDACToUVolt(i, atwd_pedestal_dac)-
+                               mpeDACToUVolt((i-edge_pos), atwd_pedestal_dac);
+      }
+      else {
+         *disc_scan_edge_pos = speDACToUVolt(i, atwd_pedestal_dac)-
+                               speDACToUVolt((i-edge_pos), atwd_pedestal_dac);
+      }
+/* find the flat range, the maximum contiguous set of samples +-5% from
     * nominal rate...
     */
    *disc_scan_begin_flat_range = *disc_scan_end_flat_range = 0;
