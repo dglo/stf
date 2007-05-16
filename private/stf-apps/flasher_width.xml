@@ -4,7 +4,7 @@
   <name>flasher_width</name>
   <description>Flasher Board LED Pulse Width Test</description>
 
-  <version major="1" minor="5"/>
+  <version major="1" minor="6"/>
 
   <inputParameter>
     <description>DAC setting for ATWD sampling speed</description>
@@ -109,8 +109,8 @@
   </outputParameter>  
     
   <outputParameter>
-    <description>Averaged LED Current Waveform (Max Width, +1024 offset)</description>
-    <name>led_avg_current</name>
+    <description>TTL Current Waveform (Max Width, +1024 offset)</description>
+    <name>led_ttl_current</name>
 	<unsignedIntArray length="128" />
   </outputParameter>  
 
