@@ -24,8 +24,11 @@
 /* Number of pedestals to average */
 #define PEDESTAL_TRIG_CNT        100
 
-/* Number of LEDs */
-#define N_LEDS                    12
+/* Number of LEDs + TTL pulse (=~ LED 13) */
+#define N_LEDS                    13
+
+/* TTL pulse index */
+#define FB_TTL_IDX                12
 
 /* Number of brightness points */
 #define N_BRIGHTS                 10
@@ -38,8 +41,9 @@
 #define MAX_ERR_PCT               10
 
 /* Minimum current peak in ATWD units at maximum brightness */
-/* Nominal value is ~440, but decreases at cold temps */
-#define MIN_PEAK_MAX_BRIGHT      300
+/* Nominal value is ~440, but decreases dramatically at cold temps */
+/* Especially with newer (lower quality) LEDs */
+#define MIN_PEAK_MAX_BRIGHT      250
 
 /* Minimum slope of linear brightness relationship */
 /* Very loose condition -- nominal slope is 3.0 */
@@ -107,7 +111,7 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                                 unsigned int * min_slope_x_100,
                                 unsigned int * min_slope_led,
                                 unsigned int * failing_led_cnt,
-                                unsigned int * led_avg_current
+                                unsigned int * led_ttl_current
                              ) {
 
     int i,j,trig;
@@ -253,11 +257,19 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     hal_FB_set_pulse_width(flasher_pulse_width);
 
     for (led = 0; led < N_LEDS; led++) {
-                
-        #ifdef VERBOSE
-        printf("Enabling LED %d\n", (led+1));
-        #endif
-        hal_FB_enable_LEDs(1 << led);
+                                
+        if (led != FB_TTL_IDX) {
+#ifdef VERBOSE
+            printf("Enabling LED %d\n", (led+1));
+#endif
+            hal_FB_enable_LEDs(1 << led);
+        }
+        else {
+#ifdef VERBOSE
+            printf("Checking TTL pulse\n");
+#endif
+            hal_FB_enable_LEDs(0);
+        }
         
         /* Select which LED current to send from the flasherboard (encoded) */
         hal_FB_select_mux_input(DOM_FB_MUX_LED_1 + led);
@@ -277,8 +289,11 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
             for(j=0; j<cnt; j++)
                 currents[led][j] = 0;
             
-            #ifdef VERBOSE
-            printf("DEBUG: Taking %d flasherboard triggers using LED %d\r\n",led_trig_cnt, led+1);
+            #ifdef VERBOSE            
+            if (led != FB_TTL_IDX)
+                printf("DEBUG: Taking %d flasherboard triggers using LED %d\r\n",led_trig_cnt, led+1);
+            else 
+                printf("DEBUG: Taking %d flasherboard triggers using TTL pulse\r\n",led_trig_cnt);
             #endif
 
             /* Start flashing */
@@ -310,7 +325,16 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
             for (j=0; j<cnt; j++)
                 currents[led][j] /= (int)led_trig_cnt;
             
-            /* Extract true maximum (including spike) of current pulse */
+            /* Low-pass filter for current waveform */
+            /* Wash out spikes by using a rolling average */
+            /* This is fine since we are only interested in average amplitude */
+            /* Don't do this for TTL, as we want to see true behavior */
+            if (led != FB_TTL_IDX) {
+                for (j=cnt-1; j>1; j--)
+                    currents[led][j] = (currents[led][j] + currents[led][j-1] + currents[led][j-2]) / 3;
+            }
+
+            /* Extract true maximum (including any remnant spike) of current pulse */
             int ampl;
             peaks[i] = 0;
             for (j=0; j<cnt; j++) {
@@ -318,18 +342,21 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                 ampl = currents[led][0] - currents[led][j];
                 peaks[i] = (ampl > peaks[i]) ? ampl : peaks[i];
             }
-            
-            /* Extract the half-max width of the current pulse */
+                        
+            /* Extract the width of the current pulse */
             /* The amplitude should be something reasonable */
+            /* Start from beginning of pulse in time to avoid */
+            /* spikes / ringing after falling edge */
             int rise = 0;
             if (peaks[i] > 10) {
-                for (j=0; j<cnt; j++) {
+                for (j=cnt-1; j>=0; j--) {
                     ampl = currents[led][0] - currents[led][j];
-                    if ((rise == 0) && (ampl > 0.5*peaks[i])) {
+                    if ((rise == 0) && (ampl > 0.3*peaks[i])) {
                         rise = j;
                     }
-                    else if ((rise > 0) && (ampl < 0.5*peaks[i])) {
-                        widths[i] = j - rise;
+                    else if ((rise > 0) && (ampl < 0.3*peaks[i])) {
+                        /* Sign backwards because ATWD is time-reversed */
+                        widths[i] = rise - j;
                         break;
                     }            
                 }
@@ -340,16 +367,12 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
             
             /* Refine peak as average between width -- washes out spike */
             /* Uses the fact that rise time is very fast */
-            int peak_sum = 0;
-            if (widths[i] > 0) {
-                for (j=0; j<cnt; j++) {
-                    /* Intentionally used < instead of <= */
-                    if ((j > rise) && (j < rise+widths[i])) {
-                        peak_sum += currents[led][0] - currents[led][j];
-                    }
-                }
+            float peak_sum = 0;
+            if (widths[i] > 1) {
+                for (j=rise-1; j>rise-widths[i]; j--) 
+                    peak_sum += currents[led][0] - currents[led][j];
                 peaks[i] = peak_sum / (widths[i]-1);
-            }
+            }            
 
             /* Print the waveform */
             #ifdef VERBOSE
@@ -369,7 +392,10 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
         linearFitInt(brights, peaks, N_BRIGHTS, &slope, &intercept, &r_squared);
 
         #ifdef VERBOSE
-        printf("Fit for LED %d: slope %f, int %f, r^2 %f\n", led+1, slope, intercept, r_squared);
+        if (led != FB_TTL_IDX)
+            printf("Fit for LED %d: slope %f, int %f, r^2 %f\n", led+1, slope, intercept, r_squared);
+        else
+            printf("Fit for TTL pulse: slope %f, int %f, r^2 %f\n", slope, intercept, r_squared);            
         #endif
         
         /* Check error of points */
@@ -383,7 +409,8 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
                 led_fail[led] = 1;
 
             /* Record worst linearity error */
-            if (err_pct > *max_current_err_pct) {                
+            /* Do not count TTL pulse */
+            if ((err_pct > *max_current_err_pct) && (led != FB_TTL_IDX)) {                
                 *max_current_err_pct = err_pct;
                 *worst_linearity_led = led+1;
                 *worst_linearity_brightness = brights[i];
@@ -399,7 +426,8 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
             led_fail[led] = 1;
 
         /* Record minimum brightness at peak setting */
-        if ((led == 0) || ((peaks[N_BRIGHTS-1] < *min_peak_brightness_atwd))) {
+        /* Do not count TTL pulse */
+        if (((led == 0) || ((peaks[N_BRIGHTS-1] < *min_peak_brightness_atwd))) && (led != FB_TTL_IDX)){
             *min_peak_brightness_atwd = peaks[N_BRIGHTS-1];
             *worst_brightness_led = led+1;
             #ifdef VERBOSE
@@ -413,7 +441,8 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
             led_fail[led] = 1;
 
         /* Keep track of minimum slope */
-        if ((led == 0) || ((int)(slope*100) < *min_slope_x_100)) {
+        /* Do not count TTL pulse */        
+        if (((led == 0) || ((int)(slope*100) < *min_slope_x_100)) && (led != FB_TTL_IDX)) {
             *min_slope_x_100 = (int)(slope*100);
             *min_slope_led   = led+1;
             #ifdef VERBOSE
@@ -426,35 +455,30 @@ BOOLEAN flasher_brightnessEntry(STF_DESCRIPTOR *desc,
     /* Turn the flasherboard off */
     hal_FB_disable();
 
-    /* Return waveform average of all LEDs at maximum brightness point */
+    /* Return waveform of TTL pulse at maximum width point */
     /* This is merely for reference -- is not used for pass/fail */
     /* Offset by 1024 since STF doesn't support arrays of signed ints */
     for(j=0; j<cnt; j++)            
-        led_avg_current[j] = 0;
-   
-    for (led=0; led<N_LEDS; led++) {
-        for(j=0; j<cnt; j++) {
-            led_avg_current[j] += (unsigned int)(currents[led][j] + 1024);
-        }
-    }
-    for(j=0; j<cnt; j++)            
-        led_avg_current[j] /= (unsigned int)N_LEDS;
+        led_ttl_current[j] = (unsigned int)(currents[FB_TTL_IDX][j] + 1024);
 
     #ifdef VERBOSE
-    printf("Averaged current of all LEDs (offset +1024)\n");
+    printf("TTL pulse waveform (offset +1024)\n");
     for(j=0; j<cnt; j++)            
-        printf("%d %d\n",j, led_avg_current[j]);
+        printf("%d %d\n",j, led_ttl_current[j]);
     #endif
 
     /* Check pass/fail conditions */
     /* Individual conditions checked above; just OR all the per-LED fails here */
     BOOLEAN passed = TRUE;
     for (led = 0; led < N_LEDS; led++) {
-        *failing_led_cnt += led_fail[led];
+        /* Do NOT check TTL pulse */
+        if (led != FB_TTL_IDX) {
+            *failing_led_cnt += led_fail[led];
 #ifdef VERBOSE
-        printf("LED %d: %s\r\n", (led+1), led_fail[led] ? "failed" : "passed");
+            printf("LED %d: %s\r\n", (led+1), led_fail[led] ? "failed" : "passed");
 #endif
-        passed &= (led_fail[led] == 0);
+            passed &= (led_fail[led] == 0);
+        }
     }
 
     /* Free allocated structures */

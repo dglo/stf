@@ -4,7 +4,7 @@
   <name>flasher_brightness</name>
   <description>Flasher Board LED Brightness Test</description>
 
-  <version major="1" minor="6"/>
+  <version major="1" minor="7"/>
 
   <inputParameter>
     <description>DAC setting for ATWD sampling speed</description>
@@ -139,8 +139,8 @@
   </outputParameter>  
     
   <outputParameter>
-    <description>Averaged LED Current Waveform (+1024 offset)</description>
-    <name>led_avg_current</name>
+    <description>TTL Current Waveform (+1024 offset)</description>
+    <name>led_ttl_current</name>
 	<unsignedIntArray length="128" />
   </outputParameter>  
 
