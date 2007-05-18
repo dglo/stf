@@ -35,11 +35,11 @@
 /* Pass/fail defines */
 /* Width in ATWD samples here is *approximately* same in ns */
 #define FB_MIN_ATWD_WIDTH         20
-#define FB_MAX_ATWD_WIDTH         95
+#define FB_MAX_ATWD_WIDTH         90
 
 /* Early abort pulse width measurement */
 /* If we measure this width, we can stop */
-#define FB_ATWD_WIDTH_DONE       100
+#define FB_ATWD_WIDTH_DONE        95
 
 /* All width settings must be covered by +/-window */
 /* Units are ATWD bins, which at the default sampling speed */
