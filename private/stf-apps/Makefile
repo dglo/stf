@@ -3,7 +3,7 @@
 #
 .SUFFIXES: .c .o .S .elf .srec .xml .html .tab .bin
 
-.c.o:
+%.o : %.c *.h
 	$(CC) -c $(CFLAGS) $<
 
 .S.o:
