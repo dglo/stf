@@ -1,0 +1,14 @@
+#!/bin/sh
+
+#
+# show the run-tests html page...
+#
+source /usr/lib/cgi-bin/stf/xml/bin/common.sh
+
+echo "Content-type: text/html"
+echo
+
+${mysqlcmd} 'select name from STFTestType;' | \
+	awk -f ${awkpath}/run-tests.awk
+
+
