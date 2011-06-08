@@ -180,6 +180,6 @@ BOOLEAN atwd_led_nopmtEntry(STF_DESCRIPTOR *d,
    }
 
    free(buffer1);
-   return       
-     ((LED_dac==0 && *real_LED_voltage>=16 && *real_LED_voltage<=20) || (LED_dac==1023 && *real_LED_voltage>=0 && *real_LED_voltage<=3));
+   return 
+     ((LED_dac==0 && *real_LED_voltage>=16 && *real_LED_voltage<=20  && *LED_waveform_amplitude > 50 && *LED_waveform_position > 20 &&  *LED_waveform_position < 60) || (LED_dac==1023 &&  *real_LED_voltage>=0 && *real_LED_voltage<=3)); 
 }

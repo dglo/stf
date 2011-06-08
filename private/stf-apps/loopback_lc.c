@@ -1,4 +1,7 @@
 /* loopback_lc.c, skeleton file created by gendir
+ *
+ * FIXME: wtf?  direct register writes.  this thing
+ * needs to get fixed up...
  */
 #include "stf/stf.h"
 #include "stf-apps/loopback_lc.h"
@@ -36,7 +39,7 @@ BOOLEAN loopback_lcEntry(STF_DESCRIPTOR *d,
 
    /* set variables to zero... */
    for (i=0; i<npulses; i++) *(vars[i]) = 0;
-
+   
    for (i=0; i<loop_count; i++) {
       int j;
 
@@ -48,7 +51,7 @@ BOOLEAN loopback_lcEntry(STF_DESCRIPTOR *d,
          halUSleep(2);
 
          /* send a cmd down -- and latch... */
-         *(volatile unsigned *) 0x90081018 = 0xf000 | pulses[j];
+         *(volatile unsigned *) 0x90081018 = 0xf004 | pulses[j];
 
          /* wait for it to arrive... */
          halUSleep(10);

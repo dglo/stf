@@ -16,7 +16,7 @@ BOOLEAN atwd_pulser_speInit(STF_DESCRIPTOR *d) {
 }
 
 BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
-                    unsigned atwd_sampling_speed_dac,
+                    unsigned atwd_sampling_speed,
                     unsigned atwd_ramp_top_dac,
                     unsigned atwd_ramp_bias_dac,
                     unsigned atwd_analog_ref_dac,
@@ -34,7 +34,8 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
                     unsigned *atwd_waveform_amplitude,
                     unsigned *atwd_waveform_position,
                     unsigned *atwd_expected_amplitude,
-                    unsigned *atwd_waveform_pulser_spe) {
+                    unsigned *atwd_waveform_pulser_spe,
+                    unsigned *atwd_sampling_speed_dac) {
    const int ch = (atwd_chip_a_or_b) ? 0 : 4;
    int i;
    const int cnt = 128;
@@ -45,8 +46,12 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
       HAL_FPGA_TEST_TRIGGER_ATWD0 : HAL_FPGA_TEST_TRIGGER_ATWD1;
    int fe_pulser_dac, use_pulser=1;
 
+   /* pretest A) computer atwd_sampling speed dac... */
+   *atwd_sampling_speed_dac = 
+      calcATWDSamplingSpeedDAC(ch, trigger_mask, atwd_sampling_speed);
+
    /* pretest 1) all five atwd dac settings are programmed... */
-   halWriteDAC(ch, atwd_sampling_speed_dac);
+   halWriteDAC(ch, *atwd_sampling_speed_dac);
    halWriteDAC(ch+1, atwd_ramp_top_dac);
    halWriteDAC(ch+2, atwd_ramp_bias_dac);
    halWriteDAC(DOM_HAL_DAC_ATWD_ANALOG_REF, atwd_analog_ref_dac);
@@ -192,8 +197,8 @@ BOOLEAN atwd_pulser_speEntry(STF_DESCRIPTOR *d,
    free(buffer);
 
    return 
-      *atwd_waveform_position > 2 &&
-      *atwd_waveform_position < 10 &&
+      *atwd_waveform_position > 4 &&
+      *atwd_waveform_position < 12 &&
       ((atwd_channel==2 && *atwd_waveform_width>=2) || (atwd_channel!=2 && *atwd_waveform_width>2)) &&
       *atwd_waveform_width < 6 &&
       *atwd_waveform_amplitude > *atwd_expected_amplitude/2 &&
