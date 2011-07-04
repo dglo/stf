@@ -80,7 +80,7 @@ stfDirectory.h stfDirectory.c: $(XMLFILES) gendir Makefile
 $(CFILES): %.c: %.h
 
 $(HDRFILES): stfDirectory.h
-	if [[ ! -h $@ ]]; then ln -s stfDirectory.h $@; fi
+	if [ ! -h $@ ]; then ln -s stfDirectory.h $@; fi
 
 ../bin/stfserv: stfserv.o $(STFOBJS) $(EXOBJS)
 	gcc -o stfserv stfserv.o $(STFOBJS) $(EXOBJS) $(LIBHAL) -lm -lexpat
