@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<stf:setup xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://glacier.lbl.gov/icecube/daq/stf file:/Volumes/IceCube/WorkSpaces/jas-1/xml/daq/stf.xsd">
+
+ <pulser_spe_mpe>
+  <parameters>
+   <pulse_height>1000</pulse_height>
+   <discriminator_level>500</discriminator_level>
+   <mpe_discriminator>False</mpe_discriminator>
+   <pedestal_dac>1925</pedestal_dac>
+   <repetition_rate>1200</repetition_rate>
+  </parameters>
+ </pulser_spe_mpe>
+</stf:setup>

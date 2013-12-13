@@ -1,0 +1,11 @@
+rpms you will need:
+	dor-driver
+	domhub-tools 201+
+
+to install a release:
+
+1) gzip -dc stf-prod-NNN.tar.gz | tar xf -
+2) cd stf-prod-NNN
+3) ./add-schema stf-schema/*.xml
+
+and you should be all set...

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<stf:setup xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://glacier.lbl.gov/icecube/daq/stf file:/Volumes/IceCube/WorkSpaces/jas-1/xml/daq/stf.xsd">
+
+ <ADC>
+  <parameters>
+   <loop_count>1000</loop_count>
+  </parameters>
+ </ADC>
+</stf:setup>

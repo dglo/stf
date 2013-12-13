@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<stf:setup xmlns:stf="http://glacier.lbl.gov/icecube/daq/stf" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://glacier.lbl.gov/icecube/daq/stf file:/Volumes/IceCube/WorkSpaces/jas-1/xml/daq/stf.xsd">
+
+ <atwd_pmt_led>
+  <parameters>
+   <atwd_sampling_speed>278</atwd_sampling_speed>
+   <atwd_ramp_top_dac>2300</atwd_ramp_top_dac>
+   <atwd_ramp_bias_dac>350</atwd_ramp_bias_dac>
+   <atwd_analog_ref_dac>2250</atwd_analog_ref_dac>
+   <atwd_pedestal_dac>2130</atwd_pedestal_dac>
+   <atwd_ch0_clamp>0</atwd_ch0_clamp>
+   <atwd_chip_a_or_b>0</atwd_chip_a_or_b>
+   <atwd_channel>0</atwd_channel>
+   <pmt_hv_high_volt>1325</pmt_hv_high_volt>
+   <LED_dac>1023</LED_dac>
+   <atwd_mux_bias_dac>900</atwd_mux_bias_dac>
+   <delay_in_ns>50</delay_in_ns>
+   <loop_count>1000</loop_count>
+   <n_pedestal_waveforms>50</n_pedestal_waveforms>
+   <pedestal_subtraction>true</pedestal_subtraction>
+  </parameters>
+ </atwd_pmt_led>
+</stf:setup>
